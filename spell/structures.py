@@ -1,3 +1,9 @@
+#Functionality:
+# => Removes Ontology O
+# 1. from D and O it builds universal ABOX U_DO
+# 2. replacing every D in E with U_DO results in E_0
+# Thus: E -> E_O
+
 from dataclasses import dataclass
 import functools
 from typing import Any
@@ -33,6 +39,8 @@ class Structure:
     rn_ext: dict[int, set[tuple[int, str]]]
     indmap: dict[str, int]
     nsmap: dict[str | None, str]
+    maj_edges: dict[int, set[tuple[int, str]]] # === MAJORITY Extension ===
+    #maj_ext: dict[int, set[tuple[str, str, Optional[str]]]] #tuple (rolename, CMaj, Cmin)
 
 
 def ind(A: Structure) -> range:
@@ -96,7 +104,7 @@ class ABoxBuilder:
 
     def __init__(self):
         self.indmap = {}
-        self.A = Structure(max_ind=0, cn_ext={}, rn_ext={}, indmap={}, nsmap={})
+        self.A = Structure(max_ind=0, cn_ext={}, rn_ext={}, indmap={}, nsmap={}, maj_edges={}) # === MAJORITY Extension ===
 
     def map_ind(self, a: str):
         if a not in self.indmap:
@@ -104,6 +112,7 @@ class ABoxBuilder:
             self.indmap[a] = n
             self.A.max_ind += 1
             self.A.rn_ext[n] = set()
+            self.A.maj_edges[n] = set() # === MAJORITY Extension ===
             self.A.indmap[a] = n
 
         return self.indmap[a]
@@ -639,7 +648,11 @@ def solution2sparql(q: Structure):
                 clauses.append("?{} a {} .".format(a, name2sparql(cn)))
         for b, rn in q.rn_ext[a]:
             clauses.append("?{} {} ?{} .".format(a, name2sparql(rn), b))
-
+        # === MAJORITY Extension ===
+        for b, rn in q.maj_edges.get(a, set()):
+            # e.g. comment indicating maj constraint on role rn to child b
+            clauses.append("# Maj: ?{} maj_{} ?{} .".format(a, name2sparql(rn).strip("<>"), b))
+        # === MAJORITY Extension End ===
     if len(clauses) == 0:
         clauses.append("?0 a <http://www.w3.org/2002/07/owl#Thing> .")
 
@@ -681,6 +694,7 @@ def restrict_to_neighborhood(k: int, A: Structure, starts: list[int]):
         rn_ext={a: set() for a in range(len(inds))},
         indmap=n_indmap,
         nsmap=A.nsmap,
+        maj_edges={a: set() for a in range(len(inds))} # === MAJORITY Extension ===
     )
 
     for cn in cns:
@@ -740,7 +754,9 @@ def copy_structure(A: Structure) -> Structure:
     rns = {}
     for a in ind(A):
         rns[a] = set(A.rn_ext[a])
+
+    maj = {a: set(A.maj_edges.get(a, set())) for a in ind(A)} # === MAJORITY Extension ===
     # TODO not a deep copy
     return Structure(
-        max_ind=A.max_ind, cn_ext=cns, rn_ext=rns, indmap=A.indmap, nsmap=A.nsmap
+        max_ind=A.max_ind, cn_ext=cns, rn_ext=rns, indmap=A.indmap, nsmap=A.nsmap, maj_edges=maj # === MAJORITY Extension ===
     )
