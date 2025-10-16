@@ -32,7 +32,7 @@ HC = dict[str, list[int]]
 Simul = list[list[int]]
 Pi = list[dict[int, int]]
 Pr = dict[str, list[int]]
-Maj = dict[tuple[int, int, str], int] # === MAJORITY Extension ===
+Mj = list[dict[int, int]]
 
 
 class Variables(NamedTuple):
@@ -40,7 +40,7 @@ class Variables(NamedTuple):
     pi: Pi # = variable yi,j in paper
     pr: Pr # variable xj,r in paper
     hc: HC # = variable ci,a in paper
-    maj: Maj # === MAJORITY Extension ===
+    mj: Mj
 
 
 def compute_successors(sigma: Signature, A: Structure):
@@ -77,13 +77,13 @@ def constraint_conceptname(
 
     for pInd in range(size):
         for a in ind(A):
-            yield (-simul[pInd][a], type_var[pInd][ind_tp_idx[a]])
+            yield (-simul[pInd][a], type_var[pInd][ind_tp_idx[a]]) #HW: paper (7)
 
         for idx, tp in anti_types.items():
             for cn in tp:
-                yield (-type_var[pInd][idx], -hc[cn][pInd])
+                yield (-type_var[pInd][idx], -hc[cn][pInd]) #HW paper (5)
 
-            yield [type_var[pInd][idx]] + [hc[cn][pInd] for cn in tp]
+            yield [type_var[pInd][idx]] + [hc[cn][pInd] for cn in tp] #HW paper (6)
 
 
 def constraint_succ(
@@ -94,17 +94,15 @@ def constraint_succ(
     pr: Pr,
     simul: Simul,
     DR: list[list[list[int]]],
-    mapping: Variables # === MAJORITY Extension ===
 ):
     succs = compute_successors(sigma, A)
-    maj = mapping[4] # === MAJORITY Extension ===
 
     D2 = [[fresh_var() for a in ind(A)] for j in range(size)]
 
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
-                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a])
+                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW  paper (9)?
 
     # for a in ind(A):
     #     for pInd2 in range(size):
@@ -118,73 +116,102 @@ def constraint_succ(
         for pInd2 in range(size):
             for rn in rolenames(sigma):
                 succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
-                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim
+                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW  paper (9)?
 
-    # === MAJORITY EXTENSION - Majority Constonsraints ===
+# === MAJORTIY Extension ===
+def constraint_majority(
+    size: int,
+    A: Structure,
+    sigma: Signature,
+    pi: Pi,
+    pr: Pr,
+    mj: Mj,
+    simul: Simul,
+    DR: list[list[list[int]]],
+):
+    succs = compute_successors(sigma, A)
     for pInd in range(size):
-        for pInd2 in range(pInd + 1, size):  # ensure pInd2 > pInd
-            for rn in rolenames(sigma):
-                maj_key = (pInd, pInd2, rn)
-                maj_var = mapping.maj.get(maj_key, None)
-                if maj_var is None:
-                    continue
+        for pInd2 in range(pInd + 1, size):
+            for a in ind(A):
 
-                # For each ABox individual a, enforce conditional majority:
-                # if simul[pInd][a] and maj_var then at least floor(m/2)+1 of successors satisfy simul[pInd2][b]
-                for a in ind(A):
-                    succ_list = sorted(list(succs[rn][a]))
-                    m = len(succ_list)
+                # EX_DEFECT[rn]: Defect for existential quantor, is true when ALL successor simulations fail
+                # MAJ_DEFECT[rn]: defect for majority quantor, is true when # simulated succesors <= N/2
+                EX_DEFECT = {}
+                MAJ_DEFECT = {}
 
-                    if m == 0:
-                        # If there are no successors, majority cannot hold for a simulated node.
-                        # Enforce: NOT(simul[pInd][a] AND maj_var)  <=> (-simul OR -maj)
-                        yield [-mapping.simul[pInd][a], -maj_var]
-                        continue
+                for rn in rolenames(sigma):
 
-                    '''condVar = maj_var  # wir verwenden direkt maj_var als Bedingungsvariable
+                    #Enconcding EX-defect
+                    succ_lits = [simul[pInd2][b] for b in succs[rn][a]]
+                    N = len(succ_lits)
 
-                    bound = (m // 2) + 1  # mehr als die Hälfte
-                    lits = [mapping.simul[pInd2][b] for b in succ_list]
+                    ex_def_var = fresh_var()
+                    EX_DEFECT[rn] = ex_def_var
 
-                    # encode "at least bound of lits" conditional on condVar (maj_var)
-                    if bound > len(lits):
-                        # keine Mehrheit möglich → maj_var muss False sein
-                        yield [-condVar]
+                    if N == 0:
+                        yield [ex_def_var] # if n=0, no successors, so defect automatically true
+                    else:
+                        for l in succ_lits:
+                            yield [-ex_def_var, -l]
+                        yield [-ex_def_var] + succ_lits
+
+                    #Encoding MAJ-defect
+                    maj_def_var = fresh_var()
+                    MAJ_DEFECT[rn] = maj_def_var
+
+                    if N == 0:
+                        yield [maj_def_var] # if n=0, no successors, so defect automatically true
                     else:
                         global var_counter
-                        enc = CardEnc.atleast(lits=lits, bound=bound, top_id=var_counter, encoding=EncType.kmtotalizer)
-                        var_counter = enc.nv + 1
-                        # alle Klauseln direkt an condVar (maj_var) koppeln
-                        for cl in enc.clauses:
-                            yield [-condVar] + cl'''
+                        majority_bound = (N // 2) + 1  # strict majority
 
-                    # condVar <-> (simul[pInd][a] AND maj_var)
-                    condVar = fresh_var()
-                    yield [-condVar, mapping.simul[pInd][a]]
-                    yield [-condVar, maj_var]
-                    yield [-mapping.simul[pInd][a], -maj_var, condVar]
+                        # -MAJ_DEFEcT <=> #s_{pInd2, b} > (n/2) + 1
+                        # MAJ_SAT <=> #s_{pInd2, b} > (n/2) + 1
+                        # hence: -MAJ_DEFEcT <=> MAJ_SAT
+                        MAJ_SAT = fresh_var()
 
-                    bound = (m // 2) + 1 # strict majority (>50%)
-                    lits = [mapping.simul[pInd2][b] for b in succ_list]
+                        enc_maj_sat = CardEnc.atleast(
+                            succ_lits,
+                            bound=majority_bound,
+                            top_id=var_counter,
+                            encoding=EncType.kmtotalizer
+                        )
+                        var_counter = enc_maj_sat.nv + 1
 
-                    # If bound > len(lits) then it's impossible to satisfy; the condVar must be false
-                    if bound > len(lits):
-                        # enforce condVar => false (i.e., not allowed)
-                        yield [-condVar]
-                        continue
+                        for c in enc_maj_sat.clauses:
+                            yield [-MAJ_SAT] + c #clauses yielded by Cardinalty Encoder
 
-                    global var_counter
-                    # Use CardEnc to encode "at least bound of lits" and attach condition
-                    enc = CardEnc.atleast(lits=lits, bound=bound, top_id=var_counter, encoding=EncType.kmtotalizer)
+                        # -MAJ_DEFECT <=> MAJ_SAT <=>
+                        yield [-maj_def_var, -MAJ_SAT]
+                        yield [maj_def_var, MAJ_SAT]
 
-                    # Update global var_counter
-                    var_counter = enc.nv + 1
+                for rn in rolenames(sigma):
+                    ROLE_CHOSEN = fresh_var()
+                    yield [-ROLE_CHOSEN, pi[pInd][pInd2]]
+                    yield [-ROLE_CHOSEN, pr[rn][pInd2]]
+                    yield [ROLE_CHOSEN, -pi[pInd][pInd2], -pr[rn][pInd2]]
 
-                    # enc.clauses are CNF clauses for the cardinality constraint.
-                    # Make all those clauses conditional on condVar: condVar => clause
-                    for cl in enc.clauses:
-                        yield [-condVar] + cl
-    # === MAJORITY Extension End ===
+                    #  Majority/Existence Defect link
+                    for rn in rolenames(sigma):
+                        ROLE_CHOSEN = fresh_var()
+                        yield [-ROLE_CHOSEN, pi[pInd][pInd2]]
+                        yield [-ROLE_CHOSEN, pr[rn][pInd2]]
+                        yield [ROLE_CHOSEN, -pi[pInd][pInd2], -pr[rn][pInd2]]
+
+                        # Defect selection depending on mj
+                        # mj <=> Majority <=> Existence Defect
+                        # -mj <=> Existence <=> Majoajrity Defect
+                        yield [-DR[pInd][pInd2][a], mj[pInd][pInd2], EX_DEFECT[rn]]
+                        yield [-DR[pInd][pInd2][a], -mj[pInd][pInd2], MAJ_DEFECT[rn]]
+                        yield [DR[pInd][pInd2][a], -EX_DEFECT[rn], -MAJ_DEFECT[rn]]
+
+    # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
+    for pInd in range(size):
+        for a in ind(A):
+            for pInd2 in range(pInd + 1, size):
+                yield (-simul[pInd][a], -DR[pInd][pInd2][a])  # paper phi2 (10)
+
+# === MAJORTIY Extension End ===
 
 def complement_type(tp, sigma: Signature):
     return tuple(cn for cn in conceptnames(sigma) if cn not in tp)
@@ -219,6 +246,7 @@ def simulation_constraints(
     pi = mapping[1]
     pr = mapping[2]
     hc = mapping[3]
+    mj = mapping[4]
 
     # Defect vars
     DR = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)]
@@ -231,31 +259,17 @@ def simulation_constraints(
         size, A, hc, ind_tp_idx, anti_types, type_var, simul
     )
 
-    yield from constraint_succ(size, A, sigma, pi, pr, simul, DR, mapping)
+    yield from constraint_succ(size, A, sigma, pi, pr, simul, DR)
 
-    # positive Simulationsbedingung
+    yield from constraint_majority(size, A, sigma, pi, pr, mj, simul, DR)
+
+
     for pInd in range(size):
         for a in ind(A):
-            # TODO: In some cases this can be a bottleneck, we could use
-            # the type-variables here
+            # TODO: In some cases this can be a bottleneck, we could use the type-variables here
             cn_part = [-type_var[pInd][ind_tp_idx[a]]]
             rn_part = [DR[pInd][pInd2][a] for pInd2 in range(pInd + 1, size)]
-            yield [simul[pInd][a]] + cn_part + rn_part
-
-    # Same for roles
-    for pInd in range(size):
-        for pInd2 in range(pInd + 1, size):
-            for a in ind(A):
-                yield (-DR[pInd][pInd2][a], pi[pInd][pInd2])
-                for b, rn in A.rn_ext[a]:
-                    if rn in rolenames(sigma):
-                        yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b])
-
-    for pInd in range(size):
-        for a in ind(A):
-            for pInd2 in range(pInd + 1, size):
-                yield (-simul[pInd][a], -DR[pInd][pInd2][a])
-
+            yield [simul[pInd][a]] + cn_part + rn_part #paper (8)
 
 def real_coverage(model, P: list[int], N: list[int], mapping: Variables) -> int:
     simul = mapping.simul
@@ -275,10 +289,10 @@ def is_model(
     size: int, sigma: Signature, model: set[int], mapping: Variables, solver: Glucose4
 ):
     assums = []
-
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
+    #maj = mapping.maj  # add this
 
     for pInd in range(size):
         for cn in conceptnames(sigma):
@@ -291,8 +305,12 @@ def is_model(
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
                     assums.append(pi[pInd][pInd2])
                     assums.append(pr[rn][pInd2])
-
-    return solver.solve(assumptions=assums)
+                '''# include maj assumptions explicitly
+                if maj.get((pInd, pInd2, rn), None) is not None:
+                    if maj[(pInd, pInd2, rn)] in model:
+                        assums.append(maj[(pInd, pInd2, rn)])
+                    else:
+                        assums.append(-maj[(pInd, pInd2, rn)])'''
 
 
 def minimize_concept_assertions(
@@ -318,7 +336,7 @@ def model2fitting_query(
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
-    maj = mapping.maj # === MAJORITY Extension ===
+    mj = mapping.mj
 
     q = Structure(
         max_ind=size,
@@ -326,8 +344,9 @@ def model2fitting_query(
         rn_ext={a: set() for a in range(size)},
         indmap={},
         nsmap={},
-        maj_edges={a: set() for a in range(size)} # === MAJORITY Extension ===
     )
+
+    MAJ_PREFIX = "MAJ: "
 
     for pInd in range(size):
         for cn in conceptnames(sigma):
@@ -336,12 +355,11 @@ def model2fitting_query(
         for pInd2 in range(pInd + 1, size):
             for rn in rolenames(sigma):
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
-                    q.rn_ext[pInd].add((pInd2, rn))
-                # === MAJORITY Extension ===
-                # if maj variable true, add to maj_edges (represents majority edge)
-                if maj.get((pInd, pInd2, rn), None) is not None and maj[(pInd, pInd2, rn)] in model:
-                    q.maj_edges[pInd].add((pInd2, rn))
-                # === MAJORITY Extension End ===
+
+                    if mj[pInd][pInd2] in model:
+                        q.rn_ext[pInd].add((pInd2, MAJ_PREFIX + rn)) # === MAJORITY Extension ===
+                    else:
+                        q.rn_ext[pInd].add((pInd2, rn))
     return q
 
 
@@ -363,22 +381,22 @@ def create_variables(size: int, sigma: Signature, A: Structure) -> Variables:
     # Conceptnames of product individuals
     hc = {cn: [fresh_var() for pInd in range(size)] for cn in conceptnames(sigma)}
 
-    # === MAJORITY Extension ===
-    # CREATE maj variables for all (i, j, r)
-    maj = {}
-    for pInd in range(size):
-        for pInd2 in range(pInd + 1, size):
-            for rn in rolenames(sigma):
-                maj[(pInd, pInd2, rn)] = fresh_var()
-    # === MAJORITY Extension End ===
+    # mj[i][j] is true if there is an edge between i and j
+    mj = [
+        {pInd2: fresh_var() for pInd2 in range(pInd1 + 1, size)}
+        for pInd1 in range(size)
+    ]
 
-    return Variables(simul, pi, pr, hc, maj) # === MAJORITY Extension ===
+    return Variables(simul, pi, pr, hc, mj)
 
 
+#clausels for phi1, ensures that models of phi encode ELQ formulas
 def tree_query_constraints(size: int, sigma: Signature, v: Variables):
     pi = v.pi
     pr = v.pr
+    #maj = v.maj
 
+    #optimization - not neceassary for now
     if size > 0 and size < 12:
         ktrees = list(generate_all_trees(size))
 
@@ -401,33 +419,26 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
                     else:
                         yield (-treechoice[t], -pi[i][j])
 
-    # Every pInd has at least a predecessor
+    # Every pInd has at least a predecessor HW: paper (1)
     for j in range(1, size):
         yield [pi[i][j] for i in range(j)]
 
-    # Every pInd has at most one predecessor
+    # Every pInd has at most one predecessor HW: paper (2)
     for j in range(1, size):
         for i1 in range(j):
             for i2 in range(i1):
                 yield (-pi[i1][j], -pi[i2][j])
 
-    # Every pind has at least one incoming role
+    # Every pind has at least one incoming role HW: paper (3)
     for i in range(1, size):
         yield [pr[rn][i] for rn in rolenames(sigma)]
 
-    # Every pInd has at most one incoming role
+    # Every pInd has at most one incoming role HW: paper (4)
     rns = list(rolenames(sigma))
     for i in range(1, size):
         for r1 in range(len(rns)):
             for r2 in range(r1):
                 yield (-pr[rns[r1]][i], -pr[rns[r2]][i])
-    # === MAJORITY Extension ===
-    # Every pInd may have a Majority edge as well
-    for j in range(1, size):
-        for i in range(j):
-            for rn in rolenames(sigma):
-                yield [-pi[i][j], v.maj[(i, j, rn)]]
-    # === MAJORITY Extension End ===
 
 #ensures all E+ are selected and all E- are NOT selected
 def create_coverage_formula(
@@ -583,7 +594,7 @@ def solve(
             for c in create_coverage_formula(P, N, coverage_lb, mapping, all_pos):
                 pysolvers.glucose41_add_cl(g.glucose, c)
 
-            model = minimize_concept_assertions(size, sigma, g, mapping, model)
+            #model = minimize_concept_assertions(size, sigma, g, mapping, model)
         best_q = model2fitting_query(size, sigma, mapping, model)
         best_sol = (coverage_lb, best_q)
         print(solution2sparql(best_q))
@@ -613,7 +624,7 @@ def solve_incr(
     time_start = time.process_time()
     i = 1 #bound n
     best_coverage = len(P)
-    best_q = Structure(max_ind=1, cn_ext={}, rn_ext={0: set()}, indmap={}, nsmap={}, maj_edges={})
+    best_q = Structure(max_ind=1, cn_ext={}, rn_ext={0: set()}, indmap={}, nsmap={})
     dt = time.process_time() - time_start
     while (
         best_coverage < len(P) + len(N)
