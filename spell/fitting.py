@@ -181,7 +181,7 @@ def constraint_majority(
                         for c in enc_maj_sat.clauses:
                             yield [-MAJ_SAT] + c #clauses yielded by Cardinalty Encoder
 
-                        # -MAJ_DEFECT <=> MAJ_SAT <=>
+                        # -MAJ_DEFECT <=> MAJ_SAT
                         yield [-maj_def_var, -MAJ_SAT]
                         yield [maj_def_var, MAJ_SAT]
 
@@ -190,9 +190,13 @@ def constraint_majority(
                 # mj <=> Majority <=> Existence Defect
                 # -mj <=> Existence <=> Majority Defect
                 for rn in rolenames(sigma):
+                    # DR -> (mj AND MAJ_DEFECT) OR (NOT mj AND EX_DEFECT)
                     yield [-DR[pInd][pInd2][a], mj[pInd][pInd2], EX_DEFECT[rn]]
                     yield [-DR[pInd][pInd2][a], -mj[pInd][pInd2], MAJ_DEFECT[rn]]
-                    yield [DR[pInd][pInd2][a], -EX_DEFECT[rn], -MAJ_DEFECT[rn]]
+
+                    # (mj AND MAJ_DEFECT) OR (NOT mj AND EX_DEFECT) -> DR
+                    yield [DR[pInd][pInd2][a], mj[pInd][pInd2], -EX_DEFECT[rn]]
+                    yield [DR[pInd][pInd2][a], -mj[pInd][pInd2], -MAJ_DEFECT[rn]]
 
 # === MAJORTIY Extension End ===
 
@@ -280,7 +284,7 @@ def is_model(
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
-    #maj = mapping.maj  # add this
+    mj = mapping.mj
 
     for pInd in range(size):
         for cn in conceptnames(sigma):
@@ -293,12 +297,11 @@ def is_model(
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
                     assums.append(pi[pInd][pInd2])
                     assums.append(pr[rn][pInd2])
-                '''# include maj assumptions explicitly
-                if maj.get((pInd, pInd2, rn), None) is not None:
-                    if maj[(pInd, pInd2, rn)] in model:
-                        assums.append(maj[(pInd, pInd2, rn)])
-                    else:
-                        assums.append(-maj[(pInd, pInd2, rn)])'''
+                if mj[pInd][pInd2] in model and pr[rn][pInd2] in model:
+                    assums.append(mj[pInd][pInd2])
+                    assums.append(pr[rn][pInd2])
+
+
 
 
 def minimize_concept_assertions(
@@ -317,6 +320,27 @@ def minimize_concept_assertions(
                     best_model = test_model
     return best_model
 
+
+# === MAJORITY Extension ===
+def minimize_majority(
+        size: int, sigma: Signature, solver: Glucose4, mapping: Variables, model: set[int]
+) -> set[int]:
+    best_model = model
+    mj = mapping.mj
+
+    for i in range(size):
+        for j in range(i + 1, size):
+            if mapping.mj[i][j] in best_model:
+                test_model = set(best_model)
+                test_model.remove(mj[i][j])
+                test_model.add(-mj[i][j])
+
+                if is_model(size, sigma, test_model, mapping, solver):
+                    best_model = test_model
+
+    return best_model
+# === MAJORITY Extension End ===
+
 #decoding SAT model into fitting result query q (ELQ/SPARQL)
 def model2fitting_query(
     size: int, sigma: Signature, mapping: Variables, model: set[int]
@@ -334,7 +358,7 @@ def model2fitting_query(
         nsmap={},
     )
 
-    MAJ_PREFIX = "MAJ: "
+    MAJ_PREFIX = "\033[1mMAJ: \033[0m"
 
     for pInd in range(size):
         for cn in conceptnames(sigma):
@@ -582,7 +606,9 @@ def solve(
             for c in create_coverage_formula(P, N, coverage_lb, mapping, all_pos):
                 pysolvers.glucose41_add_cl(g.glucose, c)
 
-            #model = minimize_concept_assertions(size, sigma, g, mapping, model)
+            model = minimize_majority(size, sigma, g, mapping, model)
+            model = minimize_concept_assertions(size, sigma, g, mapping, model)
+
         best_q = model2fitting_query(size, sigma, mapping, model)
         best_sol = (coverage_lb, best_q)
         print(solution2sparql(best_q))
