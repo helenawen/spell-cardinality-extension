@@ -185,31 +185,14 @@ def constraint_majority(
                         yield [-maj_def_var, -MAJ_SAT]
                         yield [maj_def_var, MAJ_SAT]
 
+                #  Majority/Existence Defect link
+                # Defect selection depending on mj
+                # mj <=> Majority <=> Existence Defect
+                # -mj <=> Existence <=> Majority Defect
                 for rn in rolenames(sigma):
-                    ROLE_CHOSEN = fresh_var()
-                    yield [-ROLE_CHOSEN, pi[pInd][pInd2]]
-                    yield [-ROLE_CHOSEN, pr[rn][pInd2]]
-                    yield [ROLE_CHOSEN, -pi[pInd][pInd2], -pr[rn][pInd2]]
-
-                    #  Majority/Existence Defect link
-                    for rn in rolenames(sigma):
-                        ROLE_CHOSEN = fresh_var()
-                        yield [-ROLE_CHOSEN, pi[pInd][pInd2]]
-                        yield [-ROLE_CHOSEN, pr[rn][pInd2]]
-                        yield [ROLE_CHOSEN, -pi[pInd][pInd2], -pr[rn][pInd2]]
-
-                        # Defect selection depending on mj
-                        # mj <=> Majority <=> Existence Defect
-                        # -mj <=> Existence <=> Majoajrity Defect
-                        yield [-DR[pInd][pInd2][a], mj[pInd][pInd2], EX_DEFECT[rn]]
-                        yield [-DR[pInd][pInd2][a], -mj[pInd][pInd2], MAJ_DEFECT[rn]]
-                        yield [DR[pInd][pInd2][a], -EX_DEFECT[rn], -MAJ_DEFECT[rn]]
-
-    # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
-    for pInd in range(size):
-        for a in ind(A):
-            for pInd2 in range(pInd + 1, size):
-                yield (-simul[pInd][a], -DR[pInd][pInd2][a])  # paper phi2 (10)
+                    yield [-DR[pInd][pInd2][a], mj[pInd][pInd2], EX_DEFECT[rn]]
+                    yield [-DR[pInd][pInd2][a], -mj[pInd][pInd2], MAJ_DEFECT[rn]]
+                    yield [DR[pInd][pInd2][a], -EX_DEFECT[rn], -MAJ_DEFECT[rn]]
 
 # === MAJORTIY Extension End ===
 
@@ -263,13 +246,18 @@ def simulation_constraints(
 
     yield from constraint_majority(size, A, sigma, pi, pr, mj, simul, DR)
 
-
     for pInd in range(size):
         for a in ind(A):
             # TODO: In some cases this can be a bottleneck, we could use the type-variables here
             cn_part = [-type_var[pInd][ind_tp_idx[a]]]
             rn_part = [DR[pInd][pInd2][a] for pInd2 in range(pInd + 1, size)]
             yield [simul[pInd][a]] + cn_part + rn_part #paper (8)
+
+    # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
+    for pInd in range(size):
+        for a in ind(A):
+            for pInd2 in range(pInd + 1, size):
+                yield (-simul[pInd][a], -DR[pInd][pInd2][a])  # paper phi2 (10)
 
 def real_coverage(model, P: list[int], N: list[int], mapping: Variables) -> int:
     simul = mapping.simul
