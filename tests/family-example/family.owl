@@ -40,6 +40,7 @@
 
     <!-- Hemma (f) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#hemma">
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <rdf:type rdf:resource="http://example.com/family#female"/>
         <hasChild rdf:resource="http://example.com/family#helena"/>
         <hasChild rdf:resource="http://example.com/family#petz"/>
@@ -49,6 +50,7 @@
 
     <!-- Peter (m) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#peter">
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <rdf:type rdf:resource="http://example.com/family#male"/>
         <hasChild rdf:resource="http://example.com/family#helena"/>
         <hasChild rdf:resource="http://example.com/family#petz"/>
@@ -59,26 +61,32 @@
     <!-- Children of Hemma & Peter -->
     <owl:NamedIndividual rdf:about="http://example.com/family#helena">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#petz">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#sophia">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#rita">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
 
     <!-- Eva (f) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#eva">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#hannes"/>
     </owl:NamedIndividual>
 
     <!-- Walter (m) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#walter">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#hannes"/>
         <hasChild rdf:resource="http://example.com/family#lisbeth"/>
     </owl:NamedIndividual>
@@ -86,14 +94,17 @@
     <!-- Children of Eva & Walter -->
     <owl:NamedIndividual rdf:about="http://example.com/family#hannes">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#lisbeth">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
 
        <!-- Maria (f) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#maria">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#sara"/>
         <hasChild rdf:resource="http://example.com/family#anna"/>
         <hasChild rdf:resource="http://example.com/family#paul"/>
@@ -102,17 +113,21 @@
     <!-- Children of Maria -->
     <owl:NamedIndividual rdf:about="http://example.com/family#sara">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#anna">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#paul">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
 
         <!-- Patricia (f) -->
     <owl:NamedIndividual rdf:about="http://example.com/family#patricia">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#vannessa"/>
         <hasChild rdf:resource="http://example.com/family#janine"/>
     </owl:NamedIndividual>
@@ -120,14 +135,17 @@
     <!-- Children of Patricia -->
     <owl:NamedIndividual rdf:about="http://example.com/family#vannessa">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#janine">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
 
      <!-- Ricki (f) -->
     <!--<owl:NamedIndividual rdf:about="http://example.com/family#ricki">
         <rdf:type rdf:resource="http://example.com/family#female"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#linus"/>
         <hasChild rdf:resource="http://example.com/family#jakob"/>
     </owl:NamedIndividual>-->
@@ -135,6 +153,7 @@
     <!-- Elmar (m) -->
     <!--<owl:NamedIndividual rdf:about="http://example.com/family#elmar">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
         <hasChild rdf:resource="http://example.com/family#linus"/>
         <hasChild rdf:resource="http://example.com/family#jakob"/>
     </owl:NamedIndividual>-->
@@ -142,9 +161,11 @@
     <!-- Children of Elmar & Ricki -->
     <!-- <owl:NamedIndividual rdf:about="http://example.com/family#linus">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>
     <owl:NamedIndividual rdf:about="http://example.com/family#jakob">
         <rdf:type rdf:resource="http://example.com/family#male"/>
+        <rdf:type rdf:resource="http://example.com/family#person"/>
     </owl:NamedIndividual>-->
 
 </rdf:RDF>
