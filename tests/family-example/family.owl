@@ -23,6 +23,7 @@
     </owl:ObjectProperty>
 
     <!-- Classes -->
+    <owl:Class rdf:about="#Sport"/>
     <owl:Class rdf:about="http://example.com/family#person"/>
     <owl:Class rdf:about="http://example.com/family#female">
         <rdfs:subClassOf rdf:resource="http://example.com/family#person"/>
