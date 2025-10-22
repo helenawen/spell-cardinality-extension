@@ -98,21 +98,13 @@ def constraint_succ(
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
-                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW  paper (9)?
-
-    # for a in ind(A):
-    #     for pInd2 in range(size):
-    #         rns = []
-    #         for (b, rn) in A[2][a]:
-    #             if rn in rolenames(sigma):
-    #                 rns.append(pr[rn][pInd2])
-    #         yield [-D2[pInd2][a] ] + rns
+                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW  paper (9)
 
     for a in ind(A):
         for pInd2 in range(size):
             for rn in rolenames(sigma):
                 succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
-                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW  paper (9)?
+                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW  paper (9)
 
 # === MAJORTIY Extension ===
 def constraint_majority(
@@ -125,10 +117,24 @@ def constraint_majority(
     simul: Simul,
     DR: list[list[list[int]]],
 ):
-    succs = compute_successors(sigma, A)
     for pInd in range(size):
         for pInd2 in range(pInd + 1, size):
             for a in ind(A):
+
+                #determine Majority over ALL successors
+                all_succs = {b for (b, rn) in A.rn_ext[a]} #because rolenames(sigma) is alredy filtered by determine_relevant_symbols
+                succ_lits = []
+                for b in all_succs:
+                    conj = fresh_var() # fresh variable conj = simul[pInd2][b] ∧ pi[pInd][pInd2]
+                    yield [-conj, simul[pInd2][b]]
+                    yield [-conj, pi[pInd][pInd2]]
+                    yield [conj, -simul[pInd2][b], -pi[pInd][pInd2]]
+                    succ_lits.append(conj)
+                n = len(succ_lits)
+
+                # idx2name = {v: k for k, v in A.indmap.items()}
+                # name = idx2name.get(a, f"anon_{a}")
+                # print(f"{name} ({a}): " + str(n))
 
                 # EX_DEFECT[rn]: Defect for existential quantor, is true when ALL successor simulations fail
                 # MAJ_DEFECT[rn]: defect for majority quantor, is true when # simulated succesors <= N/2
@@ -137,20 +143,18 @@ def constraint_majority(
 
                 for rn in rolenames(sigma):
 
-                    #Enconcding EX-defect
-                    succ_lits = []
+                    #determine Majority only over rn-successors
+                    '''succ_lits = []
                     for b in succs[rn][a]:
-                        # simul[pInd2][b]     : "successor b satisfies child concept C_{pInd2}"
-                        # yi[pInd][pInd2]     : "edge (pInd -> pInd2) is chosen"  (rename if yours is different)
-                        # We build a fresh variable conj = simul[pInd2][b] ∧ yi[pInd][pInd2]
                         conj = fresh_var()
                         yield [-conj, simul[pInd2][b]]
-                        yield [-conj, mj[pInd][pInd2]]
-                        yield [conj, -simul[pInd2][b], -mj[pInd][pInd2]]
+                        yield [-conj, pi[pInd][pInd2]]
+                        yield [conj, -simul[pInd2][b], -pi[pInd][pInd2]]
                         succ_lits.append(conj)
 
-                    n = len(succ_lits)
+                    n = len(succ_lits)'''
 
+                    # Enconcding EX-defect,
                     ex_def_var = fresh_var()
                     EX_DEFECT[rn] = ex_def_var
 
@@ -159,7 +163,7 @@ def constraint_majority(
                     else:
                         for l in succ_lits:
                             yield [-ex_def_var, -l]
-                        yield [-ex_def_var] + succ_lits
+                        yield [ex_def_var] + succ_lits
 
                     #Encoding MAJ-defect
                     maj_def_var = fresh_var()
@@ -191,26 +195,13 @@ def constraint_majority(
                         yield [-maj_def_var, -MAJ_SAT]
                         yield [maj_def_var, MAJ_SAT]
 
-                #  Majority/Existence Defect link
-                # Defect selection depending on mj
-                # mj <=> Majority <=> Existence Defect
-                # -mj <=> Existence <=> Majority Defect
-                for rn in rolenames(sigma):
-                    # Guarded biconditionals per role rn
-                    yield [-pr[rn][pInd2], -mj[pInd][pInd2], -DR[pInd][pInd2][a], MAJ_DEFECT[rn]]
-                    yield [-pr[rn][pInd2], -mj[pInd][pInd2], -MAJ_DEFECT[rn], DR[pInd][pInd2][a]]
-                    yield [-pr[rn][pInd2], mj[pInd][pInd2], -DR[pInd][pInd2][a], EX_DEFECT[rn]]
-                    yield [-pr[rn][pInd2], mj[pInd][pInd2], -EX_DEFECT[rn], DR[pInd][pInd2][a]]
+                        #yield [MAJ_DEFECT[rn], -mj[pInd][pInd2] ,-pi[pInd][pInd2], -pr[rn][pInd2], MAJ_SAT]  # if pi and pr are true, and not at least halt of successors are true (maj_sat), then defect must be true
+                        yield [-pr[rn][pInd2], -mj[pInd][pInd2], -DR[pInd][pInd2][a], MAJ_DEFECT[rn]] # -mj <=> Existence <=> Majority Defect
+                        yield [-pr[rn][pInd2], -mj[pInd][pInd2], -MAJ_DEFECT[rn], DR[pInd][pInd2][a]]
+                        yield [-pr[rn][pInd2], mj[pInd][pInd2], -DR[pInd][pInd2][a], EX_DEFECT[rn]]# mj <=> Majority <=> Existence Defect
+                        yield [-pr[rn][pInd2], mj[pInd][pInd2], -EX_DEFECT[rn], DR[pInd][pInd2][a]]
 
-                    # DR -> (mj AND MAJ_DEFECT) OR (NOT mj AND EX_DEFECT)
-                    #yield [-DR[pInd][pInd2][a], mj[pInd][pInd2], EX_DEFECT[rn]]
-                    #yield [-DR[pInd][pInd2][a], -mj[pInd][pInd2], MAJ_DEFECT[rn]]
-                    # (mj AND MAJ_DEFECT) OR (NOT mj AND EX_DEFECT) -> DR
-                    #yield [DR[pInd][pInd2][a], mj[pInd][pInd2], -EX_DEFECT[rn]]
-                    #yield [DR[pInd][pInd2][a], -mj[pInd][pInd2], -MAJ_DEFECT[rn]]
-
-
-# === MAJORTIY Extension End ===
+# === MAJORITY Extension End ===
 
 def complement_type(tp, sigma: Signature):
     return tuple(cn for cn in conceptnames(sigma) if cn not in tp)
@@ -268,11 +259,10 @@ def simulation_constraints(
             rn_part = [DR[pInd][pInd2][a] for pInd2 in range(pInd + 1, size)]
             yield [simul[pInd][a]] + cn_part + rn_part #paper (8)
 
-        '''# Same for roles #COMMENTED OUT BC OF MAJORITY EXTENSION; implicitely handelsd in clauses constraint - majority
-        for pInd in range(size):
+        '''for pInd in range(size):
             for pInd2 in range(pInd + 1, size):
                 for a in ind(A):
-                    #yield (-DR[pInd][pInd2][a], pi[pInd][pInd2]) #11
+                    yield (-DR[pInd][pInd2][a], pi[pInd][pInd2]) #11
                     for b, rn in A.rn_ext[a]:
                         if rn in rolenames(sigma):
                             yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]) #12'''
