@@ -138,6 +138,7 @@ def constraint_majority(
                 MAJ_DEFECT = {}
 
                 for rn in rolenames(sigma):
+
                     # Encoding EX-defect,
                     ex_def_var = fresh_var()
                     EX_DEFECT[rn] = ex_def_var
@@ -172,22 +173,24 @@ def constraint_majority(
                         # -MAJ_DEFECT <=> #s_{pInd2, b} > (n/2) + 1
                         # MAJ_SAT <=> #s_{pInd2, b} > (n/2) + 1
                         # hence: -MAJ_DEFECT <=> MAJ_SAT
-                        yield [-maj_def_var, -MAJ_SAT]
-                        yield [maj_def_var, MAJ_SAT]
+                        yield [-maj_def_var, MAJ_SAT]
+                        yield [-MAJ_SAT, -maj_def_var]
 
                         # if pi and pr are true, and not at least halt of successors are true (maj_sat), then defect must be true
                         #yield [MAJ_DEFECT[rn] ,-mj[pInd][pInd2], -pr[rn][pInd2], MAJ_SAT]
                         # -mj <=> Existence <=> Majority Defect
-                        yield [-pr[rn][pInd2], -mj[pInd][pInd2], -DR[pInd][pInd2][a], MAJ_DEFECT[rn]]
-                        yield [-pr[rn][pInd2], -mj[pInd][pInd2], -MAJ_DEFECT[rn], DR[pInd][pInd2][a]]
+                        #yield [-pr[rn][pInd2], -mj[pInd][pInd2], -DR[pInd][pInd2][a], MAJ_DEFECT[rn]]
+                        #yield [-pr[rn][pInd2], -mj[pInd][pInd2], -MAJ_DEFECT[rn], DR[pInd][pInd2][a]]
                         # mj <=> Majority <=> Existence Defect
                         yield [-pr[rn][pInd2], mj[pInd][pInd2], -DR[pInd][pInd2][a], EX_DEFECT[rn]]
                         yield [-pr[rn][pInd2], mj[pInd][pInd2], -EX_DEFECT[rn], DR[pInd][pInd2][a]]
 
-                        yield (-MAJ_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b]) #Maj12
-                        yield (-EX_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b]) #12
-                        yield (-EX_DEFECT[rn], pi[pInd][pInd2]) #11
-                        yield (-MAJ_DEFECT[rn], pi[pInd][pInd2]) #Maj11
+                        yield (-MAJ_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b], mj[pInd][pInd2]) #Maj12
+                        yield (-MAJ_DEFECT[rn], mj[pInd][pInd2])  # Maj11
+                        yield (-simul[pInd][a], -MAJ_DEFECT[rn], mj[pInd][pInd2])
+                        #yield (-EX_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b]) #12
+                        #yield (-EX_DEFECT[rn], pi[pInd][pInd2]) #11
+
 # === MAJORITY Extension End ===
 
 def complement_type(tp, sigma: Signature):
@@ -246,13 +249,14 @@ def simulation_constraints(
             rn_part = [DR[pInd][pInd2][a] for pInd2 in range(pInd + 1, size)]
             yield [simul[pInd][a]] + cn_part + rn_part #paper (8)
 
-    '''for pInd in range(size):
+    for pInd in range(size):
             for pInd2 in range(pInd + 1, size):
                 for a in ind(A):
-                    yield (-DR[pInd][pInd2][a], pi[pInd][pInd2])  # 11
+                    yield (-DR[pInd][pInd2][a], pi[pInd][pInd2], -mj[pInd][pInd2])  # 11
                     for b, rn in A.rn_ext[a]:
                         if rn in rolenames(sigma):
-                            yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b])  # 12   '''
+                            #pass
+                            yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b], -mj[pInd][pInd2])  # 12
 
 
     # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
@@ -314,27 +318,6 @@ def minimize_concept_assertions(
                 if is_model(size, sigma, test_model, mapping, solver):
                     best_model = test_model
     return best_model
-
-
-# === MAJORITY Extension ===
-def minimize_majority(
-        size: int, sigma: Signature, solver: Glucose4, mapping: Variables, model: set[int]
-) -> set[int]:
-    best_model = model
-    mj = mapping.mj
-
-    for i in range(size):
-        for j in range(i + 1, size):
-            if mapping.mj[i][j] in best_model:
-                test_model = set(best_model)
-                test_model.remove(mj[i][j])
-                test_model.add(-mj[i][j])
-
-                if is_model(size, sigma, test_model, mapping, solver):
-                    best_model = test_model
-
-    return best_model
-# === MAJORITY Extension End ===
 
 #decoding SAT model into fitting result query q (ELQ/SPARQL)
 def model2fitting_query(
@@ -427,13 +410,14 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
 
     # Every pInd has at least a predecessor HW: paper (1)
     for j in range(1, size):
-        yield [pi[i][j] for i in range(j)]
+        yield [pi[i][j] for i in range(j)] + [mj[i][j] for i in range(j)]
 
     # Every pInd has at most one predecessor HW: paper (2)
     for j in range(1, size):
         for i1 in range(j):
             for i2 in range(i1):
                 yield (-pi[i1][j], -pi[i2][j])
+                yield (-mj[i1][j], -mj[i2][j])
 
     # Every pind has at least one incoming role HW: paper (3)
     for i in range(1, size):
@@ -620,8 +604,7 @@ def solve(
             for c in create_coverage_formula(P, N, coverage_lb, mapping, all_pos):
                 pysolvers.glucose41_add_cl(g.glucose, c)
 
-            #model = minimize_majority(size, sigma, g, mapping, model)
-            #model = minimize_concept_assertions(size, sigma, g, mapping, model)
+            model = minimize_concept_assertions(size, sigma, g, mapping, model)
 
         best_q = model2fitting_query(size, sigma, mapping, model)
         best_sol = (coverage_lb, best_q)
