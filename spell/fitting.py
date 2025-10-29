@@ -59,7 +59,6 @@ def fresh_var():
     var_counter = var_counter + 1
     return r
 
-
 def constraint_conceptname(
     size: int,
     A: Structure,
@@ -115,7 +114,6 @@ def constraint_majority(
     simul: Simul,
     DR: list[list[list[int]]],
 ):
-    succs = compute_successors(sigma, A)
 
     for pInd in range(size):
         for pInd2 in range(pInd + 1, size):
@@ -170,32 +168,26 @@ def constraint_majority(
                         for c in enc_maj_sat.clauses:
                             yield [-MAJ_SAT] + c #clauses yielded by Cardinalty Encoder
 
-                        # -MAJ_DEFECT <=> #s_{pInd2, b} > (n/2) + 1
+                        # -MAJ_DEFECT <=> #s_{pInd2, b} > (n/2) + 1; no majority defect if more more than half of successor
                         # MAJ_SAT <=> #s_{pInd2, b} > (n/2) + 1
                         # hence: -MAJ_DEFECT <=> MAJ_SAT
                         yield [-maj_def_var, MAJ_SAT]
                         yield [-MAJ_SAT, -maj_def_var]
+                        yield [-MAJ_SAT, -mj[pInd][pInd2]]
 
-                        # if pi and pr are true, and not at least halt of successors are true (maj_sat), then defect must be true
-                        #yield [MAJ_DEFECT[rn] ,-mj[pInd][pInd2], -pr[rn][pInd2], MAJ_SAT]
-                        # -mj <=> Existence <=> Majority Defect
-                        #yield [-pr[rn][pInd2], -mj[pInd][pInd2], -DR[pInd][pInd2][a], MAJ_DEFECT[rn]]
-                        #yield [-pr[rn][pInd2], -mj[pInd][pInd2], -MAJ_DEFECT[rn], DR[pInd][pInd2][a]]
                         # mj <=> Majority <=> Existence Defect
                         yield [-pr[rn][pInd2], mj[pInd][pInd2], -DR[pInd][pInd2][a], EX_DEFECT[rn]]
                         yield [-pr[rn][pInd2], mj[pInd][pInd2], -EX_DEFECT[rn], DR[pInd][pInd2][a]]
 
+                        #clauses 10-12 from paper adapted for majority, to ensure either simul or defect if majority is active
                         yield (-MAJ_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b], mj[pInd][pInd2]) #Maj12
                         yield (-MAJ_DEFECT[rn], mj[pInd][pInd2])  # Maj11
-                        yield (-simul[pInd][a], -MAJ_DEFECT[rn], mj[pInd][pInd2])
-                        #yield (-EX_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b]) #12
-                        #yield (-EX_DEFECT[rn], pi[pInd][pInd2]) #11
+                        yield (-simul[pInd][a], -MAJ_DEFECT[rn], mj[pInd][pInd2]) #10
 
 # === MAJORITY Extension End ===
 
 def complement_type(tp, sigma: Signature):
     return tuple(cn for cn in conceptnames(sigma) if cn not in tp)
-
 
 def compute_types(A: Structure, sigma: Signature):
     types: list[list[str]] = [[] for a in ind(A)]
@@ -255,9 +247,8 @@ def simulation_constraints(
                     yield (-DR[pInd][pInd2][a], pi[pInd][pInd2], -mj[pInd][pInd2])  # 11
                     for b, rn in A.rn_ext[a]:
                         if rn in rolenames(sigma):
-                            #pass
+                            pass
                             yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b], -mj[pInd][pInd2])  # 12
-
 
     # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
     for pInd in range(size):
@@ -381,9 +372,6 @@ def create_variables(size: int, sigma: Signature, A: Structure) -> Variables:
 def tree_query_constraints(size: int, sigma: Signature, v: Variables):
     pi = v.pi
     pr = v.pr
-    mj = v.mj
-    rns = rolenames(sigma)
-    #maj = v.maj
 
     #optimization - not neceassary for now
     if size > 0 and size < 12:
@@ -410,14 +398,14 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
 
     # Every pInd has at least a predecessor HW: paper (1)
     for j in range(1, size):
-        yield [pi[i][j] for i in range(j)] + [mj[i][j] for i in range(j)]
+        yield [pi[i][j] for i in range(j)]
 
     # Every pInd has at most one predecessor HW: paper (2)
     for j in range(1, size):
         for i1 in range(j):
             for i2 in range(i1):
                 yield (-pi[i1][j], -pi[i2][j])
-                yield (-mj[i1][j], -mj[i2][j])
+                #yield (-mj[i1][j], -mj[i2][j])
 
     # Every pind has at least one incoming role HW: paper (3)
     for i in range(1, size):
@@ -429,13 +417,6 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
         for r1 in range(len(rns)):
             for r2 in range(r1):
                 yield (-pr[rns[r1]][i], -pr[rns[r2]][i])
-
-    # === MAJORITY Extension ===
-    # for i in range(size):
-    #    for j in range(i + 1, size):
-    #        for rn in rns:
-    #            yield (-mj[i][j], pi[i][j])
-    # === MAJORITY Extension End ===
 
 #ensures all E+ are selected and all E- are NOT selected
 def create_coverage_formula(
