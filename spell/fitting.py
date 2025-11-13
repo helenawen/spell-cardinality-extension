@@ -24,12 +24,14 @@ HC = dict[str, list[int]]
 Simul = list[list[int]]
 Pi = list[dict[int, int]]
 Pr = dict[str, list[int]]
+Mj = list[dict[int, int]] #HW: same structure as Pi
 
 class Variables(NamedTuple):
     simul: Simul  #HW: = variable si,a in paper
     pi: Pi  #HW: = variable yi,j in paper
     pr: Pr  #HW: variable xj,r in paper
     hc: HC  #HW: = variable ci,a in paper
+    mj: Mj
 
 
 def compute_successors(sigma: Signature, A: Structure):
@@ -43,9 +45,9 @@ def compute_successors(sigma: Signature, A: Structure):
                 succs[rn][a].add(b)
     return succs
 
+#todo also need to compute ALL successors (not only r successors)
 
 var_counter: int = 1
-
 
 def fresh_var():
     global var_counter
@@ -81,23 +83,118 @@ def constraint_succ(
     sigma: Signature,
     pi: Pi,
     pr: Pr,
+    mj: Mj,
     simul: Simul,
-    DR: list[list[list[int]]],
+    exd: list[list[list[int]]],
+    mjd: list[list[list[int]]],
+    mjsat: list[list[dict[str, int]]]
 ):
     succs = compute_successors(sigma, A)
 
-    D2 = [[fresh_var() for a in ind(A)] for j in range(size)]
+    link_ex = [[fresh_var() for a in ind(A)] for j in range(size)]
+    link_mj = [[fresh_var() for a in ind(A)] for j in range(size)]
 
+    #Existential Restriction Part MAJ-EXT ADAPTED
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
-                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW: paper (9)
+                yield [exd[pInd][pInd2][a], -pi[pInd][pInd2], mj[pInd][pInd2], link_ex[pInd2][a]] #HW: paper (9) / (9-Ex)
 
     for a in ind(A):
         for pInd2 in range(size):
             for rn in rolenames(sigma):
                 succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
-                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW: paper (9)
+                yield [-link_ex[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW: paper (9) / (9-Ex)
+
+    #Majority Restriction Part MAJ-EXT NEW
+    for a in ind(A):
+        for pInd2 in range(size):
+            for pInd in range(pInd2):
+                yield [mjd[pInd][pInd2][a], -pi[pInd][pInd2], -mj[pInd][pInd2], link_mj[pInd2][a]]  # HW: paper (9) / (9-Ex)
+
+    for a in ind(A):
+        for pInd2 in range(size):
+            for rn in rolenames(sigma):
+                #yield [-link_mj[pInd2][a], -pr[rn][pInd2], mjsat[pInd2][a][rn]]   # HW: paper (9) / (9-Ex)
+                succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
+                yield [-link_mj[pInd2][a], -pr[rn][pInd2], mjsat[pInd2][a][rn]] #+ succ_sim
+
+
+
+
+#MAJ-EXT NEW
+def majority_encoding(
+        size: int,
+        A: Structure,
+        sigma: Signature,
+        simul: Simul,
+        mjsat: list[list[dict[str, int]]]
+):
+    succs = compute_successors(sigma, A)
+    global var_counter
+
+    for pInd in range(size):
+        for pInd2 in range(pInd + 1, size):
+            for a in ind(A):
+                all_succs = set(b for b, rn in A.rn_ext[a])
+                total = len(all_succs)
+                majority_bound = (total // 2) + 1
+
+                for rn in rolenames(sigma):
+                    succ_lits = [simul[pInd2][b] for b in succs[rn][a]]
+                    if not succ_lits:
+                        continue
+
+                    # impossible to reach majority, mjsat must be false
+                    if majority_bound > len(succ_lits):
+                        yield [-mjsat[pInd2][a][rn]]
+                    else:
+                        # Direction 1: mjsat -> majority condition
+                        # now check for every relecant rolename, whether this role fulfills majority cardinality
+                        # i.e. if more than half of all successors are of this role.
+                        maj_enc_atleast = CardEnc.atleast(
+                            succ_lits,
+                            bound=majority_bound,
+                            top_id=var_counter,
+                            encoding=EncType.kmtotalizer
+                        )
+                        var_counter = maj_enc_atleast.nv + 1
+                        for c in maj_enc_atleast.clauses:
+                            yield [-mjsat[pInd2][a][rn]] + list(c)
+
+                        # Direction 2: majority condition -> mjsat
+                        maj_enc_atmost = CardEnc.atmost(
+                            succ_lits,
+                            bound=majority_bound - 1,
+                            top_id=var_counter,
+                            encoding=EncType.kmtotalizer
+                        )
+                        var_counter = maj_enc_atmost.nv + 1
+                        for c in maj_enc_atmost.clauses:
+                            yield [mjsat[pInd2][a][rn]] + list(c)
+
+                        #for b in succs[rn][a]:
+                            #yield [-mjsat[pInd2][a][rn], simul[pInd2][b]]
+
+# MAJ-EXT NEW
+def manage_defect_links(
+    size: int,
+    A: Structure,
+    mj: Mj,
+    DR: list[list[list[int]]],
+    exd: list[list[list[int]]],
+    mjd: list[list[list[int]]],
+):
+
+    for a in ind(A):
+        for pInd2 in range(size):
+            for pInd in range(pInd2):
+                # link main defect to existential defect
+                yield[mj[pInd][pInd2], -DR[pInd][pInd2][a], exd[pInd][pInd2][a]]
+                yield [mj[pInd][pInd2], -exd[pInd][pInd2][a], DR[pInd][pInd2][a]]
+                # link main defect to majority defect
+                yield [-mj[pInd][pInd2], -DR[pInd][pInd2][a], mjd[pInd][pInd2][a]]
+                yield [-mj[pInd][pInd2], -mjd[pInd][pInd2][a], DR[pInd][pInd2][a]]
 
 
 def complement_type(tp, sigma: Signature):
@@ -131,19 +228,22 @@ def simulation_constraints(
     pi = mapping[1]
     pr = mapping[2]
     hc = mapping[3]
+    mj = mapping[4]
 
-    # Defect vars
-    DR = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)]
+    # Defect vars MAJ-EXT NEW
+    DR = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)] #HW: 'umbrella'/main defect
+    exd = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)] #HW: existential defect - MAJ-EXT NEW
+    mjd = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)] #HW: majority defect - MAJ-EXT NEW
+    mjsat = [[{rn: fresh_var() for rn in rolenames(sigma)} for a in ind(A)] for j in range(size)] #HW: majority satisfiable - MAJ-EXT NEW
+    #mjsat = [[[[fresh_var() for rn in rolenames(sigma)] for a in ind(A)] for j in range(size)] for i in range(size)]
 
     ind_tp_idx, anti_types = compute_types(A, sigma)
-
     type_var = [{idx: fresh_var() for idx in set(ind_tp_idx)} for i in range(size)]
 
-    yield from constraint_conceptname(
-        size, A, hc, ind_tp_idx, anti_types, type_var, simul
-    )
-
-    yield from constraint_succ(size, A, sigma, pi, pr, simul, DR)
+    yield from majority_encoding(size, A, sigma, simul, mjsat)
+    yield from manage_defect_links(size, A, mj, DR, exd, mjd)
+    yield from constraint_conceptname(size, A, hc, ind_tp_idx, anti_types, type_var, simul)
+    yield from constraint_succ(size, A, sigma, pi, pr, mj, simul, exd, mjd, mjsat)
 
     # positive Simulationsbedingung
     for pInd in range(size):
@@ -157,15 +257,17 @@ def simulation_constraints(
     for pInd in range(size):
         for pInd2 in range(pInd + 1, size):
             for a in ind(A):
-                yield (-DR[pInd][pInd2][a], pi[pInd][pInd2]) #HW: paper (11)
+                yield [-DR[pInd][pInd2][a], pi[pInd][pInd2]] #HW: paper (11)
                 for b, rn in A.rn_ext[a]:
                     if rn in rolenames(sigma):
-                        yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]) #HW: paper (12)
+                        #yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]) #HW: paper (12)
+                        yield [mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]]
+                        yield [-mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -mjsat[pInd2][b][rn]]
 
     for pInd in range(size):
         for a in ind(A):
             for pInd2 in range(pInd + 1, size):
-                yield (-simul[pInd][a], -DR[pInd][pInd2][a]) #HW: paper (10)
+                yield [-simul[pInd][a], -DR[pInd][pInd2][a]] #HW: paper (10)
 
 
 def real_coverage(model, P: list[int], N: list[int], mapping: Variables) -> int:
@@ -229,6 +331,7 @@ def model2fitting_query(
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
+    mj = mapping.mj
 
     q = Structure(
         max_ind=size,
@@ -245,7 +348,11 @@ def model2fitting_query(
         for pInd2 in range(pInd + 1, size):
             for rn in rolenames(sigma):
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
-                    q.rn_ext[pInd].add((pInd2, rn))
+                    if mj[pInd][pInd2] in model:
+                        q.rn_ext[pInd].add((pInd2, "MAJ " + rn))
+                    else:
+                        q.rn_ext[pInd].add((pInd2, rn))
+
     return q
 
 
@@ -267,12 +374,21 @@ def create_variables(size: int, sigma: Signature, A: Structure) -> Variables:
     # Conceptnames of product individuals
     hc = {cn: [fresh_var() for pInd in range(size)] for cn in conceptnames(sigma)}
 
-    return Variables(simul, pi, pr, hc)
+    # MAJ-EXT NEW
+    # mj[i][j] is true if there is an edge between i and j and this edge is interpreted as a majority quantifier,
+    # otherwise it is interpreted as an existential quantifier
+    mj = [
+        {pInd2: fresh_var() for pInd2 in range(pInd1 + 1, size)}
+        for pInd1 in range(size)
+    ]
+
+    return Variables(simul, pi, pr, hc, mj)
 
 
 def tree_query_constraints(size: int, sigma: Signature, v: Variables):
     pi = v.pi
     pr = v.pr
+    mj = v.mj
 
     if size > 0 and size < 12:
         ktrees = list(generate_all_trees(size))
@@ -304,7 +420,7 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
     for j in range(1, size):
         for i1 in range(j):
             for i2 in range(i1):
-                yield (-pi[i1][j], -pi[i2][j])
+                yield [-pi[i1][j], -pi[i2][j]]
 
     # Every pind has at least one incoming role HW:  paper (3)
     for i in range(1, size):
@@ -317,6 +433,12 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
             for r2 in range(r1):
                 yield (-pr[rns[r1]][i], -pr[rns[r2]][i])
 
+    #MAJ-EXT NEW
+    #Mj flag can only be existend if there exists an pi edge
+    for i in range(1,size):
+        for j in range(i + 1, size):
+            yield (-mj[i][j], pi[i][j])
+            #yield (-pi[i][j], -mj[i][j])
 
 def create_coverage_formula(
     P: list[int], N: list[int], coverage: int, mapping: Variables, all_pos: bool
@@ -464,6 +586,18 @@ def solve(
         # print(g.accum_stats())
         model: set[int] = set(g.get_model())  # type: ignore
         coverage_lb = real_coverage(model, P, N, mapping)
+
+        #mapping von index -> individueller Name
+        idx2name = {v: k for k, v in A.indmap.items()}
+        for a in ind(A):
+            name = idx2name.get(a, f"anon_{a}")
+            lit = mapping.simul[0][a]
+            if lit in model:
+                print(f"{name} ({a}): covered ✅")
+            elif -lit in model:
+                print(f"{name} ({a}): not covered ❌")
+            else:
+                print(f"{name} ({a}): unassigned (unexpected)")
 
         if True:
             # Required for minimization
