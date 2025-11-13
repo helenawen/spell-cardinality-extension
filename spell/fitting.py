@@ -1,11 +1,8 @@
-#Functionality:
-# 1. translates instance from learning problem (find ELQ q) into SAT instance
-# 2. calls SAT solver to find model of formula
-# 3. decodes model into fitting ELQ q and returns it as SPARQL q
-# +. provides function for looking incrementally (1,2,3,...)
+from os import write
 import time
 from enum import Enum
 from typing import NamedTuple, Union
+
 from pysat.card import CardEnc, EncType
 from pysat.solvers import Glucose4, pysolvers
 
@@ -27,15 +24,12 @@ HC = dict[str, list[int]]
 Simul = list[list[int]]
 Pi = list[dict[int, int]]
 Pr = dict[str, list[int]]
-Mj = list[dict[int, int]]
-
 
 class Variables(NamedTuple):
-    simul: Simul # = variable si,a in paper
-    pi: Pi # = variable yi,j in paper
-    pr: Pr # variable xj,r in paper
-    hc: HC # = variable ci,a in paper
-    mj: Mj
+    simul: Simul  #HW: = variable si,a in paper
+    pi: Pi  #HW: = variable yi,j in paper
+    pr: Pr  #HW: variable xj,r in paper
+    hc: HC  #HW: = variable ci,a in paper
 
 
 def compute_successors(sigma: Signature, A: Structure):
@@ -59,6 +53,7 @@ def fresh_var():
     var_counter = var_counter + 1
     return r
 
+
 def constraint_conceptname(
     size: int,
     A: Structure,
@@ -75,9 +70,10 @@ def constraint_conceptname(
 
         for idx, tp in anti_types.items():
             for cn in tp:
-                yield (-type_var[pInd][idx], -hc[cn][pInd]) #HW paper (5)
+                yield (-type_var[pInd][idx], -hc[cn][pInd]) #HW: paper (5)
 
-            yield [type_var[pInd][idx]] + [hc[cn][pInd] for cn in tp] #HW paper (6)
+            yield [type_var[pInd][idx]] + [hc[cn][pInd] for cn in tp] #HW: paper (6)
+
 
 def constraint_succ(
     size: int,
@@ -95,99 +91,18 @@ def constraint_succ(
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
-                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW  paper (9)
+                yield (DR[pInd][pInd2][a], -pi[pInd][pInd2], D2[pInd2][a]) #HW: paper (9)
 
     for a in ind(A):
         for pInd2 in range(size):
             for rn in rolenames(sigma):
                 succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
-                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW  paper (9)
+                yield [-D2[pInd2][a], -pr[rn][pInd2]] + succ_sim #HW: paper (9)
 
-# === MAJORTIY Extension ===
-def constraint_majority(
-    size: int,
-    A: Structure,
-    sigma: Signature,
-    pi: Pi,
-    pr: Pr,
-    mj: Mj,
-    simul: Simul,
-    DR: list[list[list[int]]],
-):
-
-    for pInd in range(size):
-        for pInd2 in range(pInd + 1, size):
-            for a in ind(A):
-
-                #determine Majority over ALL successors
-                all_succs = {b for (b, rn) in A.rn_ext[a]} #because rolenames(sigma) is alredy filtered by determine_relevant_symbols
-                succ_lits = []
-                for b in all_succs:
-                    l = fresh_var() # fresh variable conj = simul[pInd2][b] ∧ pi[pInd][pInd2]
-                    yield [-l, simul[pInd2][b]]
-                    yield [-l, pi[pInd][pInd2]]
-                    yield [l, -simul[pInd2][b], -pi[pInd][pInd2]]
-                    succ_lits.append(l)
-                n = len(succ_lits)
-
-                # EX_DEFECT[rn]: Defect for existential quantor, is true when ALL successor simulations fail
-                # MAJ_DEFECT[rn]: defect for majority quantor, is true when # simulated succesors <= N/2
-                EX_DEFECT = {}
-                MAJ_DEFECT = {}
-
-                for rn in rolenames(sigma):
-
-                    # Encoding EX-defect,
-                    ex_def_var = fresh_var()
-                    EX_DEFECT[rn] = ex_def_var
-                    # Encoding MAJ-defect
-                    maj_def_var = fresh_var()
-                    MAJ_DEFECT[rn] = maj_def_var
-
-                    if n == 0:
-                        yield [ex_def_var] # if n=0, no successors, so EX defect automatically true
-                        yield [maj_def_var]  # if n=0, no successors, so MAJ defect automatically true
-                    else:
-                        for l in succ_lits:
-                            yield [-ex_def_var, -l]
-                        yield [ex_def_var] + succ_lits
-
-                        global var_counter
-                        majority_bound = (n // 2) + 1   # strict majority
-                        MAJ_SAT = fresh_var()
-
-                        #Cardinality Encoding, at least half successor must be true
-                        enc_maj_sat = CardEnc.atleast(
-                            succ_lits,
-                            bound=majority_bound,
-                            top_id=var_counter,
-                            encoding=EncType.kmtotalizer,
-                        )
-                        var_counter = max(var_counter, enc_maj_sat.nv + 1)
-
-                        for c in enc_maj_sat.clauses:
-                            yield [-MAJ_SAT] + c #clauses yielded by Cardinalty Encoder
-
-                        # -MAJ_DEFECT <=> #s_{pInd2, b} > (n/2) + 1; no majority defect if more more than half of successor
-                        # MAJ_SAT <=> #s_{pInd2, b} > (n/2) + 1
-                        # hence: -MAJ_DEFECT <=> MAJ_SAT
-                        yield [-maj_def_var, MAJ_SAT]
-                        yield [-MAJ_SAT, -maj_def_var]
-                        yield [-MAJ_SAT, -mj[pInd][pInd2]]
-
-                        # mj <=> Majority <=> Existence Defect
-                        yield [-pr[rn][pInd2], mj[pInd][pInd2], -DR[pInd][pInd2][a], EX_DEFECT[rn]]
-                        yield [-pr[rn][pInd2], mj[pInd][pInd2], -EX_DEFECT[rn], DR[pInd][pInd2][a]]
-
-                        #clauses 10-12 from paper adapted for majority, to ensure either simul or defect if majority is active
-                        yield (-MAJ_DEFECT[rn], -pr[rn][pInd2], -simul[pInd2][b], mj[pInd][pInd2]) #Maj12
-                        yield (-MAJ_DEFECT[rn], mj[pInd][pInd2])  # Maj11
-                        yield (-simul[pInd][a], -MAJ_DEFECT[rn], mj[pInd][pInd2]) #10
-
-# === MAJORITY Extension End ===
 
 def complement_type(tp, sigma: Signature):
     return tuple(cn for cn in conceptnames(sigma) if cn not in tp)
+
 
 def compute_types(A: Structure, sigma: Signature):
     types: list[list[str]] = [[] for a in ind(A)]
@@ -209,8 +124,6 @@ def compute_types(A: Structure, sigma: Signature):
 
 
 # Returns a list of constraints that enforce the simulation conditions
-#ensures that query q fits Eo
-# helper variables DR = Defekte in Paper type_var
 def simulation_constraints(
     size: int, sigma: Signature, A: Structure, mapping: Variables
 ):
@@ -218,7 +131,6 @@ def simulation_constraints(
     pi = mapping[1]
     pr = mapping[2]
     hc = mapping[3]
-    mj = mapping[4]
 
     # Defect vars
     DR = [[[fresh_var() for a in ind(A)] for j in range(size)] for i in range(size)]
@@ -233,28 +145,27 @@ def simulation_constraints(
 
     yield from constraint_succ(size, A, sigma, pi, pr, simul, DR)
 
-    yield from constraint_majority(size, A, sigma, pi, pr, mj, simul, DR)
-
+    # positive Simulationsbedingung
     for pInd in range(size):
         for a in ind(A):
+            #In some cases this can be a bottleneck, we could use the type-variables here
             cn_part = [-type_var[pInd][ind_tp_idx[a]]]
             rn_part = [DR[pInd][pInd2][a] for pInd2 in range(pInd + 1, size)]
-            yield [simul[pInd][a]] + cn_part + rn_part #paper (8)
+            yield [simul[pInd][a]] + cn_part + rn_part #HW: paper (8)
 
+    # Same for roles
     for pInd in range(size):
-            for pInd2 in range(pInd + 1, size):
-                for a in ind(A):
-                    yield (-DR[pInd][pInd2][a], pi[pInd][pInd2], -mj[pInd][pInd2])  # 11
-                    for b, rn in A.rn_ext[a]:
-                        if rn in rolenames(sigma):
-                            pass
-                            yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b], -mj[pInd][pInd2])  # 12
+        for pInd2 in range(pInd + 1, size):
+            for a in ind(A):
+                yield (-DR[pInd][pInd2][a], pi[pInd][pInd2]) #HW: paper (11)
+                for b, rn in A.rn_ext[a]:
+                    if rn in rolenames(sigma):
+                        yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]) #HW: paper (12)
 
-    # if simul[i][a] true, dann MUST NOT be any defect DR[i][j][a] for any edge i -> j.
     for pInd in range(size):
         for a in ind(A):
             for pInd2 in range(pInd + 1, size):
-                yield (-simul[pInd][a], -DR[pInd][pInd2][a])  # paper phi2 (10)
+                yield (-simul[pInd][a], -DR[pInd][pInd2][a]) #HW: paper (10)
 
 
 def real_coverage(model, P: list[int], N: list[int], mapping: Variables) -> int:
@@ -270,14 +181,15 @@ def real_coverage(model, P: list[int], N: list[int], mapping: Variables) -> int:
 
     return cov
 
+
 def is_model(
     size: int, sigma: Signature, model: set[int], mapping: Variables, solver: Glucose4
 ):
     assums = []
+
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
-    mj = mapping.mj
 
     for pInd in range(size):
         for cn in conceptnames(sigma):
@@ -290,9 +202,9 @@ def is_model(
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
                     assums.append(pi[pInd][pInd2])
                     assums.append(pr[rn][pInd2])
-                if mj[pInd][pInd2] in model and pr[rn][pInd2] in model:
-                    assums.append(mj[pInd][pInd2])
-                    assums.append(pr[rn][pInd2])
+
+    return solver.solve(assumptions=assums)
+
 
 def minimize_concept_assertions(
     size: int, sigma: Signature, solver: Glucose4, mapping: Variables, model: set[int]
@@ -310,14 +222,13 @@ def minimize_concept_assertions(
                     best_model = test_model
     return best_model
 
-#decoding SAT model into fitting result query q (ELQ/SPARQL)
+
 def model2fitting_query(
     size: int, sigma: Signature, mapping: Variables, model: set[int]
 ) -> Structure:
     pi = mapping.pi
     pr = mapping.pr
     hc = mapping.hc
-    mj = mapping.mj
 
     q = Structure(
         max_ind=size,
@@ -334,10 +245,7 @@ def model2fitting_query(
         for pInd2 in range(pInd + 1, size):
             for rn in rolenames(sigma):
                 if pi[pInd][pInd2] in model and pr[rn][pInd2] in model:
-                    if mj[pInd][pInd2] in model:
-                        q.rn_ext[pInd].add((pInd2, "MAJ " + rn))
-                    else:
-                        q.rn_ext[pInd].add((pInd2, rn))
+                    q.rn_ext[pInd].add((pInd2, rn))
     return q
 
 
@@ -359,21 +267,13 @@ def create_variables(size: int, sigma: Signature, A: Structure) -> Variables:
     # Conceptnames of product individuals
     hc = {cn: [fresh_var() for pInd in range(size)] for cn in conceptnames(sigma)}
 
-    # mj[i][j] is true if there is an edge between i and j
-    mj = [
-        {pInd2: fresh_var() for pInd2 in range(pInd1 + 1, size)}
-        for pInd1 in range(size)
-    ]
-
-    return Variables(simul, pi, pr, hc, mj)
+    return Variables(simul, pi, pr, hc)
 
 
-#clausels for phi1, ensures that models of phi encode ELQ formulas
 def tree_query_constraints(size: int, sigma: Signature, v: Variables):
     pi = v.pi
     pr = v.pr
 
-    #optimization - not neceassary for now
     if size > 0 and size < 12:
         ktrees = list(generate_all_trees(size))
 
@@ -405,9 +305,8 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
         for i1 in range(j):
             for i2 in range(i1):
                 yield (-pi[i1][j], -pi[i2][j])
-                #yield (-mj[i1][j], -mj[i2][j])
 
-    # Every pind has at least one incoming role HW: paper (3)
+    # Every pind has at least one incoming role HW:  paper (3)
     for i in range(1, size):
         yield [pr[rn][i] for rn in rolenames(sigma)]
 
@@ -418,7 +317,7 @@ def tree_query_constraints(size: int, sigma: Signature, v: Variables):
             for r2 in range(r1):
                 yield (-pr[rns[r1]][i], -pr[rns[r2]][i])
 
-#ensures all E+ are selected and all E- are NOT selected
+
 def create_coverage_formula(
     P: list[int], N: list[int], coverage: int, mapping: Variables, all_pos: bool
 ) -> list[list[int]]:
@@ -518,9 +417,8 @@ def restrict_nb(
 
 # Constructs a formula to find a separating query of size and solves it
 # Guaranted that we can reach min_coverage
-#SAT SOLVER AUFRUF
 def solve(
-    size: int, # size = bound n
+    size: int,
     A: Structure,
     P: list[int],
     N: list[int],
@@ -533,13 +431,13 @@ def solve(
     A, P, N = restrict_nb(size, A, P, N)
 
     if all_pos:
-        min_pos = len(P) #minimale anzahl an ausgewählten postiven Beispielen, müssen ALLE sein
+        min_pos = len(P)
     else:
         # If we want to cover at least min_coverage examples, we have to cover at
         # least min_pos positive examples
         min_pos = max(coverage_lb - len(N), 1)
     # Use symbols that occur in distance k - 1 of at least min_pos positive example
-    sigma = determine_relevant_symbols(A, P, min_pos, size - 1) #improvement 2 from paper
+    sigma = determine_relevant_symbols(A, P, min_pos, size - 1)
 
     g = Glucose4()
     mapping = create_variables(size, sigma, A)
@@ -565,19 +463,6 @@ def solve(
 
         # print(g.accum_stats())
         model: set[int] = set(g.get_model())  # type: ignore
-
-        # mapping von index -> individueller Name
-        idx2name = {v: k for k, v in A.indmap.items()}
-        for a in ind(A):
-            name = idx2name.get(a, f"anon_{a}")
-            lit = mapping.simul[0][a]
-            if lit in model:
-                print(f"{name} ({a}): covered ✅")
-            elif -lit in model:
-                print(f"{name} ({a}): not covered ❌")
-            else:
-                print(f"{name} ({a}): unassigned (unexpected)")
-
         coverage_lb = real_coverage(model, P, N, mapping)
 
         if True:
@@ -586,7 +471,6 @@ def solve(
                 pysolvers.glucose41_add_cl(g.glucose, c)
 
             model = minimize_concept_assertions(size, sigma, g, mapping, model)
-
         best_q = model2fitting_query(size, sigma, mapping, model)
         best_sol = (coverage_lb, best_q)
         print(solution2sparql(best_q))
@@ -604,17 +488,16 @@ def solve(
 
 
 # Search for a small separating query by incrementally increasing the size
-#Hauptschleife: BOUNDED FITTING Passiert da, ruft solve auf
 def solve_incr(
-    A: Structure, #TBOX, KB
-    P: list[int],#postive examples
-    N: list[int], #negative examples
+    A: Structure,
+    P: list[int],
+    N: list[int],
     m: mode,
     timeout: float = -1,
     max_size: int = 19,
 ) -> tuple[int, Structure]:
     time_start = time.process_time()
-    i = 1 #bound n
+    i = 1
     best_coverage = len(P)
     best_q = Structure(max_ind=1, cn_ext={}, rn_ext={0: set()}, indmap={}, nsmap={})
     dt = time.process_time() - time_start
