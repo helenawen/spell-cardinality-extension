@@ -65,11 +65,13 @@
         <rdf:type rdf:resource="#Person"/>
         <doesCraft rdf:resource="#Crochet"/>
         <doesCraft rdf:resource="#Painting"/>
+        <doesSport rdf:resource="#Boulders"/>
     </owl:NamedIndividual>
 
     <owl:NamedIndividual rdf:about="#Jakob">
         <rdf:type rdf:resource="#Person"/>
         <doesSport rdf:resource="#Boulders"/>
+        <doesSport rdf:resource="#Running"/>
     </owl:NamedIndividual>
 
 </rdf:RDF>

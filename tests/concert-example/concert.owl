@@ -1,0 +1,504 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns="http://example.org/concerts#"
+         xml:base="http://example.org/concerts">
+
+  <owl:Ontology rdf:about="http://example.org/concerts">
+    <rdfs:comment>Ontology for singers, concerts, and attendance data for testing majority constraints.</rdfs:comment>
+  </owl:Ontology>
+
+  <!-- ===== CLASSES ===== -->
+  <owl:Class rdf:about="#Singer"/>
+  <owl:Class rdf:about="#Concert"/>
+  <owl:Class rdf:about="#AttendanceRecord"/>
+  <owl:Class rdf:about="#Region"/>
+  <owl:Class rdf:about="#Album"/>
+  <owl:Class rdf:about="#Genre"/>
+
+  <!-- ===== OBJECT PROPERTIES ===== -->
+  <owl:ObjectProperty rdf:about="#performedConcert">
+    <rdfs:domain rdf:resource="#Singer"/>
+    <rdfs:range rdf:resource="#Concert"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasLocation">
+    <rdfs:domain rdf:resource="#Concert"/>
+    <rdfs:range rdf:resource="#Region"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasAttendance">
+    <rdfs:domain rdf:resource="#Concert"/>
+    <rdfs:range rdf:resource="#AttendanceRecord"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasAlbum">
+    <rdfs:domain rdf:resource="#Singer"/>
+    <rdfs:range rdf:resource="#Album"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasGenre">
+    <rdfs:domain rdf:resource="#Singer"/>
+    <rdfs:range rdf:resource="#Genre"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#collaboratedWith">
+    <rdfs:domain rdf:resource="#Singer"/>
+    <rdfs:range rdf:resource="#Singer"/>
+  </owl:ObjectProperty>
+
+  <!-- ===== DATATYPE PROPERTIES ===== -->
+  <owl:DatatypeProperty rdf:about="#numVisitors">
+    <rdfs:domain rdf:resource="#AttendanceRecord"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#releasedInYear">
+    <rdfs:domain rdf:resource="#Album"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#gYear"/>
+  </owl:DatatypeProperty>
+
+  <!-- ===== REGIONS ===== -->
+  <owl:NamedIndividual rdf:about="#US"><rdf:type rdf:resource="#Region"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Europe"><rdf:type rdf:resource="#Region"/></owl:NamedIndividual>
+
+  <!-- ===== GENRES ===== -->
+  <owl:NamedIndividual rdf:about="#Pop"><rdf:type rdf:resource="#Genre"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Rock"><rdf:type rdf:resource="#Genre"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Jazz"><rdf:type rdf:resource="#Genre"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Country"><rdf:type rdf:resource="#Genre"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Electronic"><rdf:type rdf:resource="#Genre"/></owl:NamedIndividual>
+
+  <!-- ===== ALBUMS ===== -->
+  <owl:NamedIndividual rdf:about="#Album_Skyline"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2018</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Firelight"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2019</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Oceans"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2020</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Moonrise"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2021</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_NeonDreams"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2022</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Roadtrip"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2017</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Stars"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2016</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Rhythm"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2023</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Metro"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2018</releasedInYear></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Album_Breeze"><rdf:type rdf:resource="#Album"/><releasedInYear rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">2021</releasedInYear></owl:NamedIndividual>
+
+  <!-- ========================================================== -->
+  <!-- ===== POSITIVE SINGERS (8) ===== -->
+  <!-- ========================================================== -->
+
+  <!-- Singer_Alice -->
+  <owl:NamedIndividual rdf:about="#Singer_Alice">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Pop"/>
+    <hasAlbum rdf:resource="#Album_Skyline"/>
+    <performedConcert rdf:resource="#Concert_A1"/>
+    <performedConcert rdf:resource="#Concert_A2"/>
+    <performedConcert rdf:resource="#Concert_A3"/>
+    <performedConcert rdf:resource="#Concert_A4"/>
+    <performedConcert rdf:resource="#Concert_A5"/>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_A1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_A1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_A1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6200</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_A2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_A2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_A2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7000</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_A3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_A3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_A3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3200</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_A4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_A4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_A4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8000</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_A5"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_A5"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_A5"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5000</numVisitors></owl:NamedIndividual>
+
+  <!-- Singer_Ben -->
+  <owl:NamedIndividual rdf:about="#Singer_Ben">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Rock"/>
+    <hasAlbum rdf:resource="#Album_Firelight"/>
+    <performedConcert rdf:resource="#Concert_B1"/>
+    <performedConcert rdf:resource="#Concert_B2"/>
+    <performedConcert rdf:resource="#Concert_B3"/>
+    <performedConcert rdf:resource="#Concert_B4"/>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_B1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_B1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_B1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8000</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_B2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_B2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_B2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6000</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_B3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_B3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_B3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4000</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_B4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_B4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_B4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7200</numVisitors></owl:NamedIndividual>
+
+    <!-- Singer_Carla -->
+  <owl:NamedIndividual rdf:about="#Singer_Carla">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Jazz"/>
+    <hasAlbum rdf:resource="#Album_Oceans"/>
+    <performedConcert rdf:resource="#Concert_C1"/>
+    <performedConcert rdf:resource="#Concert_C2"/>
+    <performedConcert rdf:resource="#Concert_C3"/>
+    <performedConcert rdf:resource="#Concert_C4"/>
+    <performedConcert rdf:resource="#Concert_C5"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_C1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_C1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_C1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5600</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_C2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_C2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_C2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_C3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_C3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_C3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7500</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_C4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_C4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_C4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_C5"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_C5"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_C5"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8300</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_David -->
+  <owl:NamedIndividual rdf:about="#Singer_David">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Rock"/>
+    <hasAlbum rdf:resource="#Album_Moonrise"/>
+    <performedConcert rdf:resource="#Concert_D1"/>
+    <performedConcert rdf:resource="#Concert_D2"/>
+    <performedConcert rdf:resource="#Concert_D3"/>
+    <performedConcert rdf:resource="#Concert_D4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_D1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_D1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_D1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_D2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_D2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_D2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_D3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_D3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_D3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_D4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_D4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_D4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3700</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Emma -->
+  <owl:NamedIndividual rdf:about="#Singer_Emma">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Pop"/>
+    <hasAlbum rdf:resource="#Album_NeonDreams"/>
+    <performedConcert rdf:resource="#Concert_E1"/>
+    <performedConcert rdf:resource="#Concert_E2"/>
+    <performedConcert rdf:resource="#Concert_E3"/>
+    <performedConcert rdf:resource="#Concert_E4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_E1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_E1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_E1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6400</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_E2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_E2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_E2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_E3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_E3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_E3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_E4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_E4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_E4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7100</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Felix -->
+  <owl:NamedIndividual rdf:about="#Singer_Felix">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Electronic"/>
+    <hasAlbum rdf:resource="#Album_Rhythm"/>
+    <performedConcert rdf:resource="#Concert_F1"/>
+    <performedConcert rdf:resource="#Concert_F2"/>
+    <performedConcert rdf:resource="#Concert_F3"/>
+    <performedConcert rdf:resource="#Concert_F4"/>
+    <performedConcert rdf:resource="#Concert_F5"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_F1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_F1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_F1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8500</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_F2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_F2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_F2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9300</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_F3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_F3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_F3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_F4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_F4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_F4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_F5"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_F5"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_F5"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7800</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Grace -->
+  <owl:NamedIndividual rdf:about="#Singer_Grace">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Country"/>
+    <hasAlbum rdf:resource="#Album_Roadtrip"/>
+    <performedConcert rdf:resource="#Concert_G1"/>
+    <performedConcert rdf:resource="#Concert_G2"/>
+    <performedConcert rdf:resource="#Concert_G3"/>
+    <performedConcert rdf:resource="#Concert_G4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_G1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_G1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_G1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6700</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_G2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_G2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_G2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3500</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_G3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_G3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_G3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_G4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_G4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_G4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7300</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Henry -->
+  <owl:NamedIndividual rdf:about="#Singer_Henry">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Rock"/>
+    <hasAlbum rdf:resource="#Album_Stars"/>
+    <performedConcert rdf:resource="#Concert_H1"/>
+    <performedConcert rdf:resource="#Concert_H2"/>
+    <performedConcert rdf:resource="#Concert_H3"/>
+    <performedConcert rdf:resource="#Concert_H4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_H1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_H1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_H1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_H2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_H2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_H2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5600</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_H3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_H3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_H3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4700</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_H4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#US"/><hasAttendance rdf:resource="#Attend_H4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_H4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8500</numVisitors></owl:NamedIndividual>
+
+  <!-- ========================================================== -->
+  <!-- ===== NEGATIVE SINGERS (12) ===== -->
+  <!-- ========================================================== -->
+  <!-- E.g., Singer_Ian (mostly Europe or small US crowds) -->
+
+  <owl:NamedIndividual rdf:about="#Singer_Ian">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Jazz"/>
+    <hasAlbum rdf:resource="#Album_Moonrise"/>
+    <performedConcert rdf:resource="#Concert_I1"/>
+    <performedConcert rdf:resource="#Concert_I2"/>
+    <performedConcert rdf:resource="#Concert_I3"/>
+    <performedConcert rdf:resource="#Concert_I4"/>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_I1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_I1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_I1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4500</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_I2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_I2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_I2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4700</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_I3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_I3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_I3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Concert_I4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_I4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_I4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4100</numVisitors></owl:NamedIndividual>
+
+  <!-- Singer_Jake -->
+  <owl:NamedIndividual rdf:about="#Singer_Jake">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Rock"/>
+    <hasAlbum rdf:resource="#Album_Firelight"/>
+    <performedConcert rdf:resource="#Concert_J1"/>
+    <performedConcert rdf:resource="#Concert_J2"/>
+    <performedConcert rdf:resource="#Concert_J3"/>
+    <performedConcert rdf:resource="#Concert_J4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_J1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_J1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_J1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_J2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_J2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_J2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_J3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_J3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_J3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3600</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_J4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_J4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_J4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4900</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Kate -->
+  <owl:NamedIndividual rdf:about="#Singer_Kate">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Pop"/>
+    <hasAlbum rdf:resource="#Album_Oceans"/>
+    <performedConcert rdf:resource="#Concert_K1"/>
+    <performedConcert rdf:resource="#Concert_K2"/>
+    <performedConcert rdf:resource="#Concert_K3"/>
+    <performedConcert rdf:resource="#Concert_K4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_K1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_K1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_K1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_K2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_K2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_K2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4700</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_K3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_K3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_K3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_K4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_K4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_K4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4500</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Liam -->
+  <owl:NamedIndividual rdf:about="#Singer_Liam">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Electronic"/>
+    <hasAlbum rdf:resource="#Album_Metro"/>
+    <performedConcert rdf:resource="#Concert_L1"/>
+    <performedConcert rdf:resource="#Concert_L2"/>
+    <performedConcert rdf:resource="#Concert_L3"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_L1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_L1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_L1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_L2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_L2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_L2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_L3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_L3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_L3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4000</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Mia -->
+  <owl:NamedIndividual rdf:about="#Singer_Mia">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Jazz"/>
+    <hasAlbum rdf:resource="#Album_Breeze"/>
+    <performedConcert rdf:resource="#Concert_M1"/>
+    <performedConcert rdf:resource="#Concert_M2"/>
+    <performedConcert rdf:resource="#Concert_M3"/>
+    <performedConcert rdf:resource="#Concert_M4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_M1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_M1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_M1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_M2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_M2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_M2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4600</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_M3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_M3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_M3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_M4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_M4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_M4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Noah -->
+  <owl:NamedIndividual rdf:about="#Singer_Noah">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Country"/>
+    <hasAlbum rdf:resource="#Album_Roadtrip"/>
+    <performedConcert rdf:resource="#Concert_N1"/>
+    <performedConcert rdf:resource="#Concert_N2"/>
+    <performedConcert rdf:resource="#Concert_N3"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_N1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_N1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_N1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4200</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_N2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_N2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_N2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_N3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_N3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_N3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4100</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Olivia -->
+  <owl:NamedIndividual rdf:about="#Singer_Olivia">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Pop"/>
+    <hasAlbum rdf:resource="#Album_Stars"/>
+    <performedConcert rdf:resource="#Concert_O1"/>
+    <performedConcert rdf:resource="#Concert_O2"/>
+    <performedConcert rdf:resource="#Concert_O3"/>
+    <performedConcert rdf:resource="#Concert_O4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_O1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_O1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_O1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4300</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_O2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_O2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_O2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4700</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_O3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_O3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_O3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4400</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_O4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_O4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_O4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Paul -->
+  <owl:NamedIndividual rdf:about="#Singer_Paul">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Electronic"/>
+    <hasAlbum rdf:resource="#Album_Rhythm"/>
+    <performedConcert rdf:resource="#Concert_P1"/>
+    <performedConcert rdf:resource="#Concert_P2"/>
+    <performedConcert rdf:resource="#Concert_P3"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_P1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_P1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_P1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_P2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_P2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_P2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3500</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_P3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_P3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_P3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4200</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Quinn -->
+  <owl:NamedIndividual rdf:about="#Singer_Quinn">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Jazz"/>
+    <hasAlbum rdf:resource="#Album_Breeze"/>
+    <performedConcert rdf:resource="#Concert_Q1"/>
+    <performedConcert rdf:resource="#Concert_Q2"/>
+    <performedConcert rdf:resource="#Concert_Q3"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_Q1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_Q1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_Q1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3800</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_Q2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_Q2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_Q2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4500</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_Q3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_Q3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_Q3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4300</numVisitors></owl:NamedIndividual>
+
+
+  <!-- Singer_Riley -->
+  <owl:NamedIndividual rdf:about="#Singer_Riley">
+    <rdf:type rdf:resource="#Singer"/>
+    <hasGenre rdf:resource="#Country"/>
+    <hasAlbum rdf:resource="#Album_Roadtrip"/>
+    <performedConcert rdf:resource="#Concert_R1"/>
+    <performedConcert rdf:resource="#Concert_R2"/>
+    <performedConcert rdf:resource="#Concert_R3"/>
+    <performedConcert rdf:resource="#Concert_R4"/>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_R1"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_R1"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_R1"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4000</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_R2"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_R2"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_R2"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3900</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_R3"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_R3"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_R3"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4100</numVisitors></owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="#Concert_R4"><rdf:type rdf:resource="#Concert"/><hasLocation rdf:resource="#Europe"/><hasAttendance rdf:resource="#Attend_R4"/></owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="#Attend_R4"><rdf:type rdf:resource="#AttendanceRecord"/><numVisitors rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4200</numVisitors></owl:NamedIndividual>
+
+</rdf:RDF>

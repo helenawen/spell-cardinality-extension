@@ -1,0 +1,8 @@
+http://example.org/concerts#Singer_Alice
+http://example.org/concerts#Singer_Ben
+http://example.org/concerts#Singer_Carla
+http://example.org/concerts#Singer_David
+http://example.org/concerts#Singer_Emma
+http://example.org/concerts#Singer_Felix
+http://example.org/concerts#Singer_Grace
+http://example.org/concerts#Singer_Henry
