@@ -45,7 +45,13 @@ def compute_successors(sigma: Signature, A: Structure):
                 succs[rn][a].add(b)
     return succs
 
-#todo also need to compute ALL successors (not only r successors)
+def compute_all_successors_by_individuals(A: Structure):
+    succs_of_ind: dict[int, set[int]] = {}
+    for a in ind(A):
+        succs_of_ind[a] = set()
+        for b, rn in A.rn_ext[a]:
+            succs_of_ind[a].add(b)
+    return succs_of_ind
 
 var_counter: int = 1
 
@@ -93,6 +99,7 @@ def constraint_succ(
 
     link_ex = [[fresh_var() for a in ind(A)] for j in range(size)]
     link_mj = [[fresh_var() for a in ind(A)] for j in range(size)]
+    link_mj2 = [[fresh_var() for a in ind(A)] for j in range(size)]
 
     #Existential Restriction Part MAJ-EXT ADAPTED
     for a in ind(A):
@@ -110,17 +117,24 @@ def constraint_succ(
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
-                yield [mjd[pInd][pInd2][a], -pi[pInd][pInd2], -mj[pInd][pInd2], link_mj[pInd2][a]]  # HW: paper (9) / (9-Ex)
+                pass
+                yield [mjd[pInd][pInd2][a], -pi[pInd][pInd2], -mj[pInd][pInd2], link_mj[pInd2][a]]  # HW: paper (9) / (9-Mj)
 
     for a in ind(A):
         for pInd2 in range(size):
             for rn in rolenames(sigma):
-                #yield [-link_mj[pInd2][a], -pr[rn][pInd2], mjsat[pInd2][a][rn]]   # HW: paper (9) / (9-Ex)
-                succ_sim = [simul[pInd2][b] for b in succs[rn][a]]
-                yield [-link_mj[pInd2][a], -pr[rn][pInd2], mjsat[pInd2][a][rn]] #+ succ_sim
+                pass
+                yield [-link_mj[pInd2][a], -pr[rn][pInd2], mjsat[pInd2][a][rn]]   # HW: paper (9) / (9-Mj)
 
-
-
+    #todo add this clause to theoritcal notes on ipad, this clause is not yet documented!!!
+    for pInd in range(size):
+        for pInd2 in range(pInd + 1, size):
+            for a in ind(A):
+                for b, rn in A.rn_ext[a]:
+                    if rn in rolenames(sigma):
+                        yield [-mj[pInd][pInd2], -pi[pInd][pInd2], -pr[rn][pInd2], -mjsat[pInd2][a][rn], -mjd[pInd][pInd2][a]]
+                        #simul ∧ pi ∧ pr ∧ mj → mjsat
+                        #yield[simul[pInd][a], -pi[pInd][pInd2], -pr[rn][pInd2], -pi[pInd][pInd2], mjsat[pInd2][a][rn]]
 
 #MAJ-EXT NEW
 def majority_encoding(
@@ -128,25 +142,28 @@ def majority_encoding(
         A: Structure,
         sigma: Signature,
         simul: Simul,
-        mjsat: list[list[dict[str, int]]]
+        mjsat: list[list[dict[str, int]]],
+        mj:Mj,
+        mjd: list[list[list[int]]],
+        exd: list[list[list[int]]],
 ):
     succs = compute_successors(sigma, A)
+    succs_inds = compute_all_successors_by_individuals(A)
     global var_counter
 
     for pInd in range(size):
         for pInd2 in range(pInd + 1, size):
             for a in ind(A):
-                all_succs = set(b for b, rn in A.rn_ext[a])
-                total = len(all_succs)
-                majority_bound = (total // 2) + 1
+
+                total = len(succs_inds[a])
 
                 for rn in rolenames(sigma):
+                    majority_bound = (total // 2) + 1
                     succ_lits = [simul[pInd2][b] for b in succs[rn][a]]
-                    if not succ_lits:
-                        continue
-
-                    # impossible to reach majority, mjsat must be false
-                    if majority_bound > len(succ_lits):
+                    if not succ_lits :
+                        yield [-mjsat[pInd2][a][rn]] # impossible to reach majority, mjsat must be false
+                        #yield [exd[pInd][pInd2][a]]
+                    elif majority_bound > len(succ_lits):
                         yield [-mjsat[pInd2][a][rn]]
                     else:
                         # Direction 1: mjsat -> majority condition
@@ -173,9 +190,6 @@ def majority_encoding(
                         for c in maj_enc_atmost.clauses:
                             yield [mjsat[pInd2][a][rn]] + list(c)
 
-                        #for b in succs[rn][a]:
-                            #yield [-mjsat[pInd2][a][rn], simul[pInd2][b]]
-
 # MAJ-EXT NEW
 def manage_defect_links(
     size: int,
@@ -196,10 +210,8 @@ def manage_defect_links(
                 yield [-mj[pInd][pInd2], -DR[pInd][pInd2][a], mjd[pInd][pInd2][a]]
                 yield [-mj[pInd][pInd2], -mjd[pInd][pInd2][a], DR[pInd][pInd2][a]]
 
-
 def complement_type(tp, sigma: Signature):
     return tuple(cn for cn in conceptnames(sigma) if cn not in tp)
-
 
 def compute_types(A: Structure, sigma: Signature):
     types: list[list[str]] = [[] for a in ind(A)]
@@ -240,7 +252,7 @@ def simulation_constraints(
     ind_tp_idx, anti_types = compute_types(A, sigma)
     type_var = [{idx: fresh_var() for idx in set(ind_tp_idx)} for i in range(size)]
 
-    yield from majority_encoding(size, A, sigma, simul, mjsat)
+    yield from majority_encoding(size, A, sigma, simul, mjsat,mj, mjd, exd)
     yield from manage_defect_links(size, A, mj, DR, exd, mjd)
     yield from constraint_conceptname(size, A, hc, ind_tp_idx, anti_types, type_var, simul)
     yield from constraint_succ(size, A, sigma, pi, pr, mj, simul, exd, mjd, mjsat)
@@ -531,7 +543,7 @@ def determine_relevant_symbols(
 def restrict_nb(
     k: int, A: Structure, P: list[int], N: list[int]
 ) -> tuple[Structure, list[int], list[int]]:
-    (A2, mapping) = restrict_to_neighborhood(k - 1, A, P + N)
+    (A2, mapping) = restrict_to_neighborhood(k+1, A, P + N)
     P2 = [mapping[a] for a in P]
     N2 = [mapping[a] for a in N]
     return A2, P2, N2
@@ -587,24 +599,27 @@ def solve(
         model: set[int] = set(g.get_model())  # type: ignore
         coverage_lb = real_coverage(model, P, N, mapping)
 
-        #mapping von index -> individueller Name
-        idx2name = {v: k for k, v in A.indmap.items()}
-        for a in ind(A):
-            name = idx2name.get(a, f"anon_{a}")
-            lit = mapping.simul[0][a]
-            if lit in model:
-                print(f"{name} ({a}): covered ✅")
-            elif -lit in model:
-                print(f"{name} ({a}): not covered ❌")
-            else:
-                print(f"{name} ({a}): unassigned (unexpected)")
-
         if True:
             # Required for minimization
             for c in create_coverage_formula(P, N, coverage_lb, mapping, all_pos):
                 pysolvers.glucose41_add_cl(g.glucose, c)
 
             model = minimize_concept_assertions(size, sigma, g, mapping, model)
+
+        idx2name = {v: k for k, v in A.indmap.items()}
+        # for pInd in range(size):
+        #     for a in ind(A):
+        #         name = idx2name.get(a, f"anon_{a}")
+        #         lit = mapping.simul[pInd][a]
+        #         if lit in model:
+        #             print(f"{name} ({a}): ✅")
+        #         elif -lit in model:
+        #             print(f"{name} ({a}): ❌")
+        #         else:
+        #             print(f"{name} ({a}): unassigned")
+        #     print("\n")
+
+
         best_q = model2fitting_query(size, sigma, mapping, model)
         best_sol = (coverage_lb, best_q)
         print(solution2sparql(best_q))
