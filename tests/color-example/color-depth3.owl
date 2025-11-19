@@ -151,7 +151,7 @@
     <hasChild rdf:resource="#m19"/>
   </Node>
 
-  <Node rdf:about="m9">
+  <Node rdf:about="#m9">
     <rdf:type rdf:resource="#Blue"/>
     <hasChild rdf:resource="#m20"/>
     <hasChild rdf:resource="#m21"/>

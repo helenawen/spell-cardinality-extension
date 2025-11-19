@@ -1,4 +1,0 @@
-http://example.org/interests#Alice
-http://example.org/interests#Ben
-http://example.org/interests#Carla
-http://example.org/interests#David

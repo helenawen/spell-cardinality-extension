@@ -1,6 +1,0 @@
-http://example.org/interests#Eva
-http://example.org/interests#Frank
-http://example.org/interests#Grace
-http://example.org/interests#Hannah
-http://example.org/interests#Ian
-http://example.org/interests#Julia
