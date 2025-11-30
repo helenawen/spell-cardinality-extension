@@ -4,30 +4,30 @@
 <owl:ObjectProperty rdf:about="http://example.com/test#r"/>
 
 <!-- n-Tree -->
-<owl:NamedIndividual rdf:about="http://example.com/test#n1">
+<owl:NamedIndividual rdf:about="http://example.com/test#n">
+    <test:r rdf:resource="http://example.com/test#n1"/>
     <test:r rdf:resource="http://example.com/test#n2"/>
-    <test:r rdf:resource="http://example.com/test#n3"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="http://example.com/test#n1">
+    <rdf:type rdf:resource="http://example.com/test#A0"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#n2">
     <rdf:type rdf:resource="http://example.com/test#A0"/>
 </owl:NamedIndividual>
 
-<owl:NamedIndividual rdf:about="http://example.com/test#n3">
-    <rdf:type rdf:resource="http://example.com/test#A0"/>
+<!-- m-Tree -->
+<owl:NamedIndividual rdf:about="http://example.com/test#m">
+    <test:r rdf:resource="http://example.com/test#m1"/>
+    <test:r rdf:resource="http://example.com/test#m2"/>
 </owl:NamedIndividual>
 
-<!-- m-Tree -->
 <owl:NamedIndividual rdf:about="http://example.com/test#m1">
-    <test:r rdf:resource="http://example.com/test#m2"/>
-    <test:r rdf:resource="http://example.com/test#m3"/>
+    <rdf:type rdf:resource="http://example.com/test#A0"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#m2">
-    <rdf:type rdf:resource="http://example.com/test#A0"/>
-</owl:NamedIndividual>
-
-<owl:NamedIndividual rdf:about="http://example.com/test#m3">
 </owl:NamedIndividual>
 
 </rdf:RDF>

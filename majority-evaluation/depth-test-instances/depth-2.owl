@@ -7,19 +7,12 @@
          xml:base="http://example.org/tree">
 
   <owl:Ontology rdf:about="http://example.org/tree">
-    <rdfs:comment>Ontology representing a hierarchical tree with nodes colored Blue and Green, extended to depth 3.</rdfs:comment>
+    <rdfs:comment>Ontology representing a hierarchical tree with nodes colored A0 and A1, extended to depth 3.</rdfs:comment>
   </owl:Ontology>
 
   <owl:Class rdf:about="#Node"/>
-  <owl:Class rdf:about="#Color"/>
-
-  <owl:Class rdf:about="#Green">
-        <rdfs:subClassOf rdf:resource="#Color"/>
-  </owl:Class>
-
-  <owl:Class rdf:about="#Blue">
-        <rdfs:subClassOf rdf:resource="#Color"/>
-  </owl:Class>
+  <owl:Class rdf:about="#A0"/>
+  <owl:Class rdf:about="#A1"/>
 
   <owl:ObjectProperty rdf:about="#hasChild">
     <rdfs:domain rdf:resource="#Node"/>
@@ -28,37 +21,37 @@
 
   <!--N-TREE-->
   <Node rdf:about="#n1">
-    <rdf:type rdf:resource="#Blue"/>
+    <rdf:type rdf:resource="#A0"/>
     <hasChild rdf:resource="#n2"/>
   </Node>
 
   <Node rdf:about="#n2">
-    <rdf:type rdf:resource="#Blue"/>
+    <rdf:type rdf:resource="#A0"/>
     <hasChild rdf:resource="#n3"/>
     <hasChild rdf:resource="#n4"/>
     <hasChild rdf:resource="#n5"/>
   </Node>
 
-  <Node rdf:about="#n3"><rdf:type rdf:resource="#Blue"/></Node>
-  <Node rdf:about="#n4"><rdf:type rdf:resource="#Blue"/></Node>
-  <Node rdf:about="#n5"><rdf:type rdf:resource="#Green"/></Node>
+  <Node rdf:about="#n3"><rdf:type rdf:resource="#A0"/></Node>
+  <Node rdf:about="#n4"><rdf:type rdf:resource="#A0"/></Node>
+  <Node rdf:about="#n5"><rdf:type rdf:resource="#A1"/></Node>
 
 
   <!--M-TREE-->
   <Node rdf:about="#m1">
-    <rdf:type rdf:resource="#Blue"/>
+    <rdf:type rdf:resource="#A0"/>
     <hasChild rdf:resource="#m2"/>
   </Node>
 
   <Node rdf:about="#m2">
-    <rdf:type rdf:resource="#Blue"/>
+    <rdf:type rdf:resource="#A0"/>
     <hasChild rdf:resource="#m3"/>
     <hasChild rdf:resource="#m4"/>
     <hasChild rdf:resource="#m5"/>
   </Node>
 
-  <Node rdf:about="#m3"><rdf:type rdf:resource="#Blue"/></Node>
-  <Node rdf:about="#m4"><rdf:type rdf:resource="#Green"/></Node>
-  <Node rdf:about="#m5"><rdf:type rdf:resource="#Green"/></Node>
+  <Node rdf:about="#m3"><rdf:type rdf:resource="#A0"/></Node>
+  <Node rdf:about="#m4"><rdf:type rdf:resource="#A1"/></Node>
+  <Node rdf:about="#m5"><rdf:type rdf:resource="#A1"/></Node>
 
 </rdf:RDF>

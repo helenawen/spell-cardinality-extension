@@ -19,7 +19,7 @@ def main():
         "neg_example_list", help="path to a textfile containing negative examples"
     )
 
-    parser.add_argument("--max_size", type=int, default=19, help="(default=19)")
+    parser.add_argument("--max_size", type=int, default=25, help="(default=25)")
     parser.add_argument(
         "--mode",
         choices=["exact", "neg_approx", "full_approx"],

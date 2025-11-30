@@ -7,15 +7,22 @@
 <owl:ObjectProperty rdf:about="http://example.com/test#r"/>
 
 <!-- n-Tree -->
-<owl:NamedIndividual rdf:about="http://example.com/test#n1">
+<owl:NamedIndividual rdf:about="http://example.com/test#n">
+    <test:r rdf:resource="http://example.com/test#n1"/>
     <test:r rdf:resource="http://example.com/test#n2"/>
     <test:r rdf:resource="http://example.com/test#n3"/>
     <test:r rdf:resource="http://example.com/test#n4"/>
     <test:r rdf:resource="http://example.com/test#n5"/>
     <test:r rdf:resource="http://example.com/test#n6"/>
     <test:r rdf:resource="http://example.com/test#n7"/>
-    <test:r rdf:resource="http://example.com/test#n7"/>
     <test:r rdf:resource="http://example.com/test#n8"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="http://example.com/test#n1">
+   <rdf:type rdf:resource="http://example.com/test#A0"/>
+   <rdf:type rdf:resource="http://example.com/test#A1"/>
+   <rdf:type rdf:resource="http://example.com/test#A2"/>
+   <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#n2">
@@ -67,15 +74,9 @@
     <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
-<owl:NamedIndividual rdf:about="http://example.com/test#n9">
-   <rdf:type rdf:resource="http://example.com/test#A0"/>
-   <rdf:type rdf:resource="http://example.com/test#A1"/>
-   <rdf:type rdf:resource="http://example.com/test#A2"/>
-   <rdf:type rdf:resource="http://example.com/test#A3"/>
-</owl:NamedIndividual>
-
 <!-- m-Tree -->
-<owl:NamedIndividual rdf:about="http://example.com/test#m1">
+<owl:NamedIndividual rdf:about="http://example.com/test#m">
+    <test:r rdf:resource="http://example.com/test#m1"/>
     <test:r rdf:resource="http://example.com/test#m2"/>
     <test:r rdf:resource="http://example.com/test#m3"/>
     <test:r rdf:resource="http://example.com/test#m4"/>
@@ -83,7 +84,13 @@
     <test:r rdf:resource="http://example.com/test#m6"/>
     <test:r rdf:resource="http://example.com/test#m7"/>
     <test:r rdf:resource="http://example.com/test#m8"/>
-    <test:r rdf:resource="http://example.com/test#m9"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="http://example.com/test#m1">
+    <rdf:type rdf:resource="http://example.com/test#A0"/>
+    <rdf:type rdf:resource="http://example.com/test#A1"/>
+    <rdf:type rdf:resource="http://example.com/test#A2"/>
+    <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#m2">
@@ -111,28 +118,21 @@
     <rdf:type rdf:resource="http://example.com/test#A0"/>
     <rdf:type rdf:resource="http://example.com/test#A1"/>
     <rdf:type rdf:resource="http://example.com/test#A2"/>
-    <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#m6">
     <rdf:type rdf:resource="http://example.com/test#A0"/>
     <rdf:type rdf:resource="http://example.com/test#A1"/>
-    <rdf:type rdf:resource="http://example.com/test#A2"/>
+    <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="http://example.com/test#m7">
     <rdf:type rdf:resource="http://example.com/test#A0"/>
-    <rdf:type rdf:resource="http://example.com/test#A1"/>
-    <rdf:type rdf:resource="http://example.com/test#A3"/>
-</owl:NamedIndividual>
-
-<owl:NamedIndividual rdf:about="http://example.com/test#m8">
-    <rdf:type rdf:resource="http://example.com/test#A0"/>
     <rdf:type rdf:resource="http://example.com/test#A2"/>
     <rdf:type rdf:resource="http://example.com/test#A3"/>
 </owl:NamedIndividual>
 
-<owl:NamedIndividual rdf:about="http://example.com/test#m9">
+<owl:NamedIndividual rdf:about="http://example.com/test#m8">
     <rdf:type rdf:resource="http://example.com/test#A1"/>
     <rdf:type rdf:resource="http://example.com/test#A2"/>
     <rdf:type rdf:resource="http://example.com/test#A3"/>
