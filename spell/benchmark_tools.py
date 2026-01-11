@@ -347,7 +347,8 @@ def create_materialized_tdb_dir(owlfile, tdb_dir):
 
 
 def owlname2tdbname(owlfile):
-    return ".cache/{}".format(owlfile.replace("/", "-"))
+    owlfile_str = str(owlfile)
+    return ".cache/{}".format(owlfile_str.replace("/", "-"))
 
 
 def parse_query_output(output_file) -> list[str]:

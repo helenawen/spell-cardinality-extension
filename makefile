@@ -3,6 +3,9 @@ SPELL=$(PYTHON) spell_cli.py
 
 all: family courses hobbies father hard1 hard5 yago10_2 yago10_19 owl2bench1 owl2bench3 owl2bench4 color1 color2 color3 color4 color-alt-1 color-alt-2 color-alt-3 color-alt-4 color-alt-5 color-alt-6 color-alt-9 color-alt-10 conj1 conj2 conj3 conj4 debug
 
+chemistry:
+	$(SPELL) tests/chemistry-example/chemistry.owl tests/chemistry-example/P.txt tests/chemistry-example/N.txt
+
 family:
 	$(SPELL) tests/family-example/family.owl tests/family-example/P.txt tests/family-example/N.txt
 
@@ -81,3 +84,92 @@ conj4:
 debug:
 	$(SPELL) tests/debug-example/debug.owl tests/debug-example/P.txt tests/debug-example/N.txt
 
+depth-1:
+	$(SPELL) tests/depth-test-instances/depth-1.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-2:
+	$(SPELL) tests/depth-test-instances/depth-2.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-3:
+	$(SPELL) tests/depth-test-instances/depth-3.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-4:
+	$(SPELL) tests/depth-test-instances/depth-4.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-5:
+	$(SPELL) tests/depth-test-instances/depth-5.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-6:
+	$(SPELL) tests/depth-test-instances/depth-6.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-7:
+	$(SPELL) tests/depth-test-instances/depth-7.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-8:
+	$(SPELL) tests/depth-test-instances/depth-8.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-9:
+	$(SPELL) tests/depth-test-instances/depth-9.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-10:
+	$(SPELL) tests/depth-test-instances/depth-10.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-11:
+	$(SPELL) tests/depth-test-instances/depth-11.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-12:
+	$(SPELL) tests/depth-test-instances/depth-12.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-13:
+	$(SPELL) tests/depth-test-instances/depth-13.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-14:
+	$(SPELL) tests/depth-test-instances/depth-14.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+depth-15:
+	$(SPELL) tests/depth-test-instances/depth-15.owl tests/depth-test-instances/P.txt tests/depth-test-instances/N.txt
+
+conj-1:
+	$(SPELL) tests/conjunction-test-instances/conj-1.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-2:
+	$(SPELL) tests/conjunction-test-instances/conj-2.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-3:
+	$(SPELL) tests/conjunction-test-instances/conj-3.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-4:
+	$(SPELL) tests/conjunction-test-instances/conj-4.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-5:
+	$(SPELL) tests/conjunction-test-instances/conj-5.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-6:
+	$(SPELL) tests/conjunction-test-instances/conj-6.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-7:
+	$(SPELL) tests/conjunction-test-instances/conj-7.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-8:
+	$(SPELL) tests/conjunction-test-instances/conj-8.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-9:
+	$(SPELL) tests/conjunction-test-instances/conj-9.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-10:
+	$(SPELL) tests/conjunction-test-instances/conj-10.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-11:
+	$(SPELL) tests/conjunction-test-instances/conj-11.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-12:
+	$(SPELL) tests/conjunction-test-instances/conj-12.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-13:
+	$(SPELL) tests/conjunction-test-instances/conj-13.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-14:
+	$(SPELL) tests/conjunction-test-instances/conj-14.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt
+
+conj-15:
+	$(SPELL) tests/conjunction-test-instances/conj-15.owl tests/conjunction-test-instances/P.txt tests/conjunction-test-instances/N.txt

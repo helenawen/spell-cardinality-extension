@@ -68,7 +68,7 @@ def run_benchmark(bench_dir: Path, writer):
     print(f"Running benchmark: {name}")
 
     process = subprocess.run(
-        ["python", str(SPELL_PATH / "spell_cli.py"), str(owl_file), str(pos_file), str(neg_file)],
+        ["python3.10", str(SPELL_PATH / "spell_cli.py"), str(owl_file), str(pos_file), str(neg_file)],
         capture_output=True,
         text=True
     )

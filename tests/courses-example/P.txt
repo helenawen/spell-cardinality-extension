@@ -1,2 +1,0 @@
-http://example.com/university#Helena
-http://example.com/university#Linus
