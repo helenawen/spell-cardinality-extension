@@ -53,7 +53,7 @@
         <rdf:type rdf:resource="http://example.org/chemistry#carbon"/>
         <binds rdf:resource="http://example.org/chemistry#h4"/>
         <binds rdf:resource="http://example.org/chemistry#h5"/>
-        <binds rdf:resource="http://example.org/chemistry#c2"/>
+        <binds rdf:resource="http://example.org/chemistry#c1"/>
         <binds rdf:resource="http://example.org/chemistry#c3"/>
     </owl:NamedIndividual>
 
