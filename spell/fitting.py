@@ -192,7 +192,6 @@ def manage_defect_links(
     exd: list[list[list[int]]],
     mjd: list[list[list[int]]],
 ):
-
     for a in ind(A):
         for pInd2 in range(size):
             for pInd in range(pInd2):
@@ -264,11 +263,13 @@ def simulation_constraints(
         for pInd2 in range(pInd + 1, size):
             for a in ind(A):
                 yield [-DR[pInd][pInd2][a], pi[pInd][pInd2]] #HW: paper (11)
-                for b, rn in A.rn_ext[a]:
-                    if rn in rolenames(sigma):
-                        #yield (-DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]) #HW: paper (12)
-                        yield [mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]] #(12-Ex)
-                        yield [-mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -mjsat[pInd2][b][rn]] #(12-Maj)
+                for rn in rolenames(sigma):
+
+                    for b, rn_succ in A.rn_ext[a]:
+                        if rn_succ == rn:
+                            yield [mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -simul[pInd2][b]] #HW: (12-EX)
+
+                    yield [-mj[pInd][pInd2], -DR[pInd][pInd2][a], -pr[rn][pInd2], -mjsat[pInd2][a][rn]] #HW: (12-Maj)
 
     for pInd in range(size):
         for a in ind(A):
